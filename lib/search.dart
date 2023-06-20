@@ -32,15 +32,21 @@ class AnimeSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    if (query.isEmpty) {
+      return const Center(child: Text("Start typing to see results..."));
+    }
     return FutureBuilder(
-      future: http.get(Uri.parse(
-          "https://9anime.to/ajax/anime/search?keyword=${Uri.encodeComponent(query)}")),
+      future: http.get(
+        Uri.parse(
+          'https://api.allanime.to/allanimeapi'
+          '?variables={"search":{"query":"$query"}}'
+          '&extensions={"persistedQuery":{"version":1,"sha256Hash":"06327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a"}}',
+        ),
+      ),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final data = jsonDecode(snapshot.data!.body);
-          final items = HtmlParser(data["result"]["html"])
-              .parse()
-              .querySelectorAll(".item");
+          final items = data["data"]["shows"]["edges"] as List;
           return ListView.builder(
             itemBuilder: (context, index) {
               return Padding(
@@ -49,16 +55,23 @@ class AnimeSearchDelegate extends SearchDelegate {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(4.0),
-                      child: Image.network(items[index]
-                          .querySelector("img")!
-                          .attributes["src"]!),
+                      child: Image.network(
+                        items[index]["thumbnail"] ??
+                            "https://placehold.co/64x108/png?text=?",
+                        height: 108,
+                        width: 64,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.network(
+                                "https://placehold.co/64x108/png?text=?"),
+                      ),
                     ),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            items[index].querySelector(".name")!.innerHtml,
+                            items[index]["englishName"] ?? items[index]["name"],
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 16,
@@ -66,9 +79,7 @@ class AnimeSearchDelegate extends SearchDelegate {
                             ),
                           ),
                           Text(
-                            items[index]
-                                .querySelector(".name")!
-                                .attributes["data-jp"]!,
+                            items[index]["name"].toString(),
                             // overflow: TextOverflow.ellipsis,
                             maxLines: 2,
                             style: const TextStyle(
@@ -79,15 +90,24 @@ class AnimeSearchDelegate extends SearchDelegate {
                           ),
                           Row(
                             children: [
+                              items[index]["season"] != null
+                                  ? Text(
+                                      items[index]["season"]["quarter"] +
+                                          items[index]["season"]["year"]
+                                              .toString(),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w200,
+                                      ),
+                                    )
+                                  : Container(),
+                              VerticalDivider(),
                               const Icon(
                                 Icons.star_border,
                                 color: Colors.black26,
                               ),
                               Text(
-                                items[index]
-                                    .querySelector(".text-gray2")!
-                                    .innerHtml
-                                    .split('</i>')[1],
+                                (items[index]["score"] ?? "?").toString(),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w200,
