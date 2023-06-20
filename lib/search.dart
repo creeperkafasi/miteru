@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:animewatch/show.dart';
+import 'package:miteru/show.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 

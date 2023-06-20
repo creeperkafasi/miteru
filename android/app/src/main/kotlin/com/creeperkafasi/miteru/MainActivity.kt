@@ -1,4 +1,4 @@
-package com.example.animewatch
+package com.creeperkafasi.miteru
 
 import io.flutter.embedding.android.FlutterActivity
 

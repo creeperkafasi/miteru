@@ -1,7 +1,18 @@
-import 'package:animewatch/search.dart';
+import 'dart:io';
+
+import 'package:miteru/search.dart';
 import 'package:flutter/material.dart';
 
+ class MyHttpOverrides extends HttpOverrides{
+  @override
+  HttpClient createHttpClient(SecurityContext? context){
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
+  }
+}
+
 void main() {
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const AnimeApp());
 }
 
@@ -18,7 +29,7 @@ class _AnimeAppState extends State<AnimeApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       debugShowMaterialGrid: false,
-      title: "AnimeWatch",
+      title: "Miteru",
       theme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
         useMaterial3: true,
@@ -26,7 +37,7 @@ class _AnimeAppState extends State<AnimeApp> {
       home: Builder(builder: (context) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text("WatchAnime"),
+            title: const Text("Miteru"),
             actions: [
               IconButton(
                 onPressed: () {
