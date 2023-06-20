@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:animewatch/show.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:html/parser.dart';
 
 class AnimeSearchDelegate extends SearchDelegate {
   @override
@@ -49,83 +49,98 @@ class AnimeSearchDelegate extends SearchDelegate {
           final items = data["data"]["shows"]["edges"] as List;
           return ListView.builder(
             itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Image.network(
-                        items[index]["thumbnail"] ??
-                            "https://placehold.co/64x108/png?text=?",
-                        height: 108,
-                        width: 64,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Image.network(
-                                "https://placehold.co/64x108/png?text=?"),
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShowOverview(
+                        showData: items[index],
                       ),
                     ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            items[index]["englishName"] ?? items[index]["name"],
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            items[index]["name"].toString(),
-                            // overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w200,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              items[index]["season"] != null
-                                  ? Text(
-                                      items[index]["season"]["quarter"] +
-                                          items[index]["season"]["year"]
-                                              .toString(),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w200,
-                                      ),
-                                    )
-                                  : Container(),
-                              VerticalDivider(),
-                              const Icon(
-                                Icons.star_border,
-                                color: Colors.black26,
-                              ),
-                              Text(
-                                (items[index]["score"] ?? "?").toString(),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w200,
-                                ),
-                              )
-                            ],
-                          ),
-                        ],
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Image.network(
+                          items[index]["thumbnail"] ??
+                              "https://placehold.co/64x108/png?text=?",
+                          height: 108,
+                          width: 64,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Image.network(
+                                  "https://placehold.co/64x108/png?text=?"),
+                        ),
                       ),
-                    )
-                  ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              items[index]["englishName"] ??
+                                  items[index]["name"],
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              items[index]["name"].toString(),
+                              // overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w200,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                items[index]["season"] != null
+                                    ? Text(
+                                        items[index]["season"]["quarter"] +
+                                            " " +
+                                            items[index]["season"]["year"]
+                                                .toString(),
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w200,
+                                        ),
+                                      )
+                                    : Container(),
+                                const VerticalDivider(),
+                                const Icon(
+                                  Icons.star_border,
+                                  color: Colors.black26,
+                                ),
+                                Text(
+                                  (items[index]["score"] ?? "?").toString(),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w200,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               );
               // return Text(items[index].innerHtml);
             },
             itemCount: items.length,
           );
-        } else if (snapshot.hasError) {
+        }
+        if (snapshot.hasError) {
           return Center(
             child: ErrorWidget(snapshot.error!),
           );
