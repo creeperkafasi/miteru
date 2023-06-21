@@ -20,7 +20,7 @@ void main() async {
 
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
-  final db = await getAppDb();
+  
   runApp(const AnimeApp());
 }
 

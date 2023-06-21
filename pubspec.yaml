@@ -36,6 +36,7 @@ dependencies:
   chewie: ^1.5.0
   video_player: ^2.6.1
   sqflite_common_ffi: ^2.2.5
+  sqlite3_flutter_libs: ^0.5.15
   path_provider: ^2.0.15
 
 dev_dependencies:
