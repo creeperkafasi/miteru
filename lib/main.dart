@@ -2,17 +2,25 @@ import 'dart:io';
 
 import 'package:miteru/search.dart';
 import 'package:flutter/material.dart';
+import 'package:miteru/utils/db.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
- class MyHttpOverrides extends HttpOverrides{
+class MyHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(SecurityContext? context){
+  HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }
 
-void main() {
+void main() async {
   HttpOverrides.global = MyHttpOverrides();
+
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+  final db = await getAppDb();
   runApp(const AnimeApp());
 }
 
@@ -42,12 +50,6 @@ class _AnimeAppState extends State<AnimeApp> {
               IconButton(
                 onPressed: () {
                   showSearch(context: context, delegate: AnimeSearchDelegate());
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => const SearchPage(),
-                  //   ),
-                  // );
                 },
                 icon: const Icon(Icons.search),
               )

@@ -35,6 +35,8 @@ dependencies:
   text_scroll: ^0.2.0
   chewie: ^1.5.0
   video_player: ^2.6.1
+  sqflite_common_ffi: ^2.2.5
+  path_provider: ^2.0.15
 
 dev_dependencies:
   flutter_test:

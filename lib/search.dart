@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:miteru/show.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:miteru/utils/db.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class AnimeSearchDelegate extends SearchDelegate {
   @override
@@ -27,14 +29,13 @@ class AnimeSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    return buildSuggestions(context);
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    if (query.isEmpty) {
-      return const Center(child: Text("Start typing to see results..."));
-    }
+    Future.sync(() async {
+      final db = await getAppDb();
+      db.insert("SearchHistory", {
+        "query": query,
+        "searchtime": DateTime.now().toString(),
+      });
+    });
     return FutureBuilder(
       future: http.get(
         Uri.parse(
@@ -47,6 +48,14 @@ class AnimeSearchDelegate extends SearchDelegate {
         if (snapshot.hasData) {
           final data = jsonDecode(snapshot.data!.body);
           final items = data["data"]["shows"]["edges"] as List;
+          if (items.isEmpty) {
+            return const Center(
+              child: Text(
+                "Nothing found!\nTry searching for something else",
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
           return ListView.builder(
             itemBuilder: (context, index) {
               return InkWell(
@@ -147,6 +156,120 @@ class AnimeSearchDelegate extends SearchDelegate {
         }
         return const Center(child: CircularProgressIndicator());
       },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return buildHistory(context);
+  }
+
+  Widget buildHistory(BuildContext context) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return FutureBuilder<List<Map<String, Object?>>>(
+          future: Future.sync(() async {
+            final db = await getAppDb();
+            final history = await db.query("SearchHistory");
+            db.close();
+            return history;
+          }),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              // using toList to make the list owned
+              var history = snapshot.data!.toList();
+              history.removeWhere(
+                (element) => element["query"].toString() == "",
+              );
+              history.sort(
+                (a, b) => -DateTime.parse(a["searchtime"].toString())
+                    .compareTo(DateTime.parse(b["searchtime"].toString())),
+              );
+              // TODO: Replace with a fuzzy finder maybe
+              history.removeWhere(
+                (element) => !element["query"].toString().contains(query),
+              );
+              return ListView.builder(
+                itemBuilder: (context, index) {
+                  return InkWell(
+                    onTap: () {
+                      query = history[index]["query"].toString();
+                      showResults(context);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.history),
+                          const VerticalDivider(),
+                          Expanded(
+                            child: Text(history[index]["query"].toString()),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              showDeleteDialog(
+                                context,
+                                history,
+                                index,
+                                setState,
+                              );
+                            },
+                            icon: Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                itemCount: history.length,
+              );
+            }
+            return Container();
+          },
+        );
+      },
+    );
+  }
+
+  Future<dynamic> showDeleteDialog(
+    BuildContext context,
+    List<Map<String, Object?>> history,
+    int index,
+    StateSetter setState,
+  ) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Are you sure"),
+        content: Text(
+          "This will remove "
+          "\"${history[index]["query"]}\" from your "
+          "search history.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Nevermind"),
+          ),
+          TextButton(
+            onPressed: () {
+              Future.sync(() async {
+                final db = await getAppDb();
+                await db.delete(
+                  "SearchHistory",
+                  where: "query = ?",
+                  whereArgs: [history[index]["query"]],
+                );
+                await db.close();
+                setState(() {});
+              });
+
+              Navigator.pop(context);
+            },
+            child: const Text("Yes."),
+          ),
+        ],
+      ),
     );
   }
 }
