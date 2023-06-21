@@ -6,6 +6,17 @@ import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:text_scroll/text_scroll.dart';
 
+const allowedSourceNames = [
+  "Default",
+  "Sak",
+  "Kir",
+  "Default B",
+  "Ac",
+  "S-mp4",
+  "Uv-mp4",
+  "Luf-mp4",
+];
+
 class ShowOverview extends StatefulWidget {
   final dynamic showData;
   const ShowOverview({super.key, required this.showData});
@@ -143,7 +154,7 @@ class _ShowOverviewState extends State<ShowOverview> {
     return showDialog(
       context: context,
       builder: (contex) =>
-          SimpleDialog(title: Text("Select Server:"), children: [
+          SimpleDialog(title: const Text("Select Server:"), children: [
         FutureBuilder(
           future: http.get(Uri.parse(
               'https://api.allanime.to/allanimeapi?variables={%22showId%22:%22$showId%22,%22translationType%22:%22$translationType%22,%22episodeString%22:%22$episodeString%22}&query=query%20(\$showId:%20String!,%20\$translationType:%20VaildTranslationTypeEnumType!,%20\$episodeString:%20String!)%20{%20%20%20%20episode(%20%20%20%20%20%20%20%20showId:%20\$showId%20%20%20%20%20%20%20%20translationType:%20\$translationType%20%20%20%20%20%20%20%20episodeString:%20\$episodeString%20%20%20%20)%20{%20%20%20%20%20%20%20%20episodeString%20sourceUrls%20%20%20%20}}')),
@@ -151,6 +162,8 @@ class _ShowOverviewState extends State<ShowOverview> {
             if (snapshot.hasData) {
               final sources = jsonDecode(snapshot.data!.body)["data"]["episode"]
                   ["sourceUrls"] as List;
+              sources.removeWhere((source) =>
+                  !allowedSourceNames.contains(source["sourceName"]));
               return Column(
                 children: sources
                     .map(

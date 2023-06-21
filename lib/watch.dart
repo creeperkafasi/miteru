@@ -1,12 +1,9 @@
 import 'dart:convert';
 
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:text_scroll/text_scroll.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
+import 'package:video_player/video_player.dart';
 
 class WatchPage extends StatefulWidget {
   final dynamic source;
@@ -18,45 +15,57 @@ class WatchPage extends StatefulWidget {
 }
 
 class _WatchPageState extends State<WatchPage> {
-  InAppWebViewController? webViewController;
+  VideoPlayerController? playerController;
+  double aspectRatio = 16 / 9;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.background,
-        title: Text("Watch ${widget.showData["name"]}"),
-      ),
-      body: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          color: Colors.red,
-          child: FutureBuilder(
-            future: widget.source["sourceUrl"].toString().startsWith("#")
-                ? Future.sync(() async {
-                    final source = await http.get(
-                      Uri.parse(
+      body: SafeArea(
+        child: Container(
+            color: Colors.black,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            child: FutureBuilder(
+              future: playerController != null
+                  ? Future.value("Ok")
+                  : Future.sync(() async {
+                      final sourceUrl = Uri.parse(
                         "https://allanimenews.com${hexToAscii(widget.source["sourceUrl"].toString().split("#")[1]).replaceFirst("clock", "clock.json")}",
-                      ),
-                    );
-                    return jsonDecode(source.body)["links"][0]["link"];
-                  })
-                : Future.value(widget.source["sourceUrl"].toString()),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                // TODO: Replace the webview with a video player like chewie
-                return InAppWebView(
-                  initialUrlRequest: URLRequest(
-                    url: WebUri(snapshot.data),
+                      );
+                      final source = await http.get(sourceUrl);
+                      final url = jsonDecode(source.body)["links"][0]["link"];
+                      playerController = VideoPlayerController.network(url);
+                      await playerController!.initialize();
+                      aspectRatio = playerController!.value.aspectRatio;
+                      return "Ok";
+                    }),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Chewie(
+                    controller: ChewieController(
+                      videoPlayerController: playerController!,
+                      aspectRatio: aspectRatio,
+                      autoInitialize: true,
+                      // autoPlay: true,
+                      // fullScreenByDefault: true,
+                    ),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return ErrorWidget(snapshot.error!);
+                }
+                return Center(
+                  child: Column(
+                    children: const [
+                      CircularProgressIndicator(),
+                      Text("Loading..."),
+                    ],
                   ),
-                  onWebViewCreated: (controller) {
-                    webViewController = controller;
-                  },
                 );
-              }
-              return const Center(child: CircularProgressIndicator());
-            },
-          )),
+              },
+            )),
+      ),
     );
   }
 }
