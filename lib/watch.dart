@@ -55,9 +55,9 @@ class _WatchPageState extends State<WatchPage> {
                 if (snapshot.hasError) {
                   return ErrorWidget(snapshot.error!);
                 }
-                return Center(
+                return const Center(
                   child: Column(
-                    children: const [
+                    children: [
                       CircularProgressIndicator(),
                       Text("Loading..."),
                     ],

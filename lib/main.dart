@@ -1,9 +1,7 @@
 import 'dart:io';
 
-import 'package:miteru/search.dart';
+import 'package:miteru/home.dart';
 import 'package:flutter/material.dart';
-import 'package:miteru/utils/db.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class MyHttpOverrides extends HttpOverrides {
@@ -20,7 +18,7 @@ void main() async {
 
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
-  
+
   runApp(const AnimeApp());
 }
 
@@ -42,22 +40,7 @@ class _AnimeAppState extends State<AnimeApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
         useMaterial3: true,
       ),
-      home: Builder(builder: (context) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text("Miteru"),
-            actions: [
-              IconButton(
-                onPressed: () {
-                  showSearch(context: context, delegate: AnimeSearchDelegate());
-                },
-                icon: const Icon(Icons.search),
-              )
-            ],
-          ),
-          body: Container(),
-        );
-      }),
+      home: const HomePage(),
     );
   }
 }

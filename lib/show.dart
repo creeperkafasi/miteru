@@ -85,14 +85,13 @@ class _ShowOverviewState extends State<ShowOverview> {
                             ),
                           )
                         : Container(),
-                    widget.showData["lastEpisodeInfo"]["sub"] != null
+                    lastEpisode()["sub"] != null
                         ? Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: ExpansionTile(
                               title: const Text("Sub"),
                               children: List.generate(
-                                int.parse(widget.showData["lastEpisodeInfo"]
-                                    ["sub"]["episodeString"]),
+                                lastEpisode()["sub"],
                                 (index) => TextButton.icon(
                                   icon: const Icon(Icons.subtitles),
                                   label: Text("Episode ${index + 1}"),
@@ -109,14 +108,13 @@ class _ShowOverviewState extends State<ShowOverview> {
                             ),
                           )
                         : Container(),
-                    widget.showData["lastEpisodeInfo"]["dub"] != null
+                    lastEpisode()["dub"] != null
                         ? Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: ExpansionTile(
                               title: const Text("Dub"),
                               children: List.generate(
-                                int.parse(widget.showData["lastEpisodeInfo"]
-                                    ["dub"]["episodeString"]),
+                                lastEpisode()["dub"],
                                 (index) => TextButton.icon(
                                   icon: const Icon(Icons.record_voice_over),
                                   label: Text("Episode ${index + 1}"),
@@ -143,6 +141,23 @@ class _ShowOverviewState extends State<ShowOverview> {
             return const Center(child: CircularProgressIndicator());
           },
         ));
+  }
+
+  lastEpisode() {
+    if (widget.showData["lastEpisodeInfo"] != null) {
+      return {
+        "sub": int.parse(
+            widget.showData["lastEpisodeInfo"]["sub"]["episodeString"]),
+        "dub": int.parse(
+            widget.showData["lastEpisodeInfo"]["dub"]["episodeString"]),
+      };
+    }
+
+    return widget.showData["availableEpisodes"] ??
+        {
+          "sub": null,
+          "dub": null,
+        };
   }
 
   Future<dynamic> showSelectServerDialog(

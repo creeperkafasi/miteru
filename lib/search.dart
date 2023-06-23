@@ -4,7 +4,6 @@ import 'package:miteru/show.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:miteru/utils/db.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class AnimeSearchDelegate extends SearchDelegate {
   @override
@@ -214,7 +213,7 @@ class AnimeSearchDelegate extends SearchDelegate {
                                 setState,
                               );
                             },
-                            icon: Icon(Icons.close),
+                            icon: const Icon(Icons.close),
                           ),
                         ],
                       ),
