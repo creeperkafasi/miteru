@@ -146,10 +146,14 @@ class _ShowOverviewState extends State<ShowOverview> {
   lastEpisode() {
     if (widget.showData["lastEpisodeInfo"] != null) {
       return {
-        "sub": int.parse(
-            widget.showData["lastEpisodeInfo"]["sub"]["episodeString"]),
-        "dub": int.parse(
-            widget.showData["lastEpisodeInfo"]["dub"]["episodeString"]),
+        "sub": int.tryParse(
+          (widget.showData["lastEpisodeInfo"]["sub"]?["episodeString"])
+              .toString(),
+        ),
+        "dub": int.tryParse(
+          (widget.showData["lastEpisodeInfo"]["dub"]?["episodeString"])
+              .toString(),
+        ),
       };
     }
 
