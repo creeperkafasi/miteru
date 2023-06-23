@@ -4,6 +4,7 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
+import 'package:wakelock/wakelock.dart';
 
 class WatchPage extends StatefulWidget {
   final dynamic source;
@@ -17,6 +18,18 @@ class WatchPage extends StatefulWidget {
 class _WatchPageState extends State<WatchPage> {
   VideoPlayerController? playerController;
   double aspectRatio = 16 / 9;
+
+  @override
+  void initState() {
+    super.initState();
+    Wakelock.enable();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    Wakelock.disable();
+  }
 
   @override
   Widget build(BuildContext context) {
