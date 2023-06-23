@@ -29,6 +29,7 @@ class _WatchPageState extends State<WatchPage> {
   void dispose() {
     super.dispose();
     Wakelock.disable();
+    playerController?.dispose();
   }
 
   @override
