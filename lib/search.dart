@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:miteru/show.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +13,7 @@ class AnimeSearchDelegate extends SearchDelegate {
       IconButton(
         onPressed: () {
           query = "";
+          showSuggestions(context);
         },
         icon: const Icon(Icons.close),
       ),
@@ -34,6 +36,14 @@ class AnimeSearchDelegate extends SearchDelegate {
         "query": query,
         "searchtime": DateTime.now().toString(),
       });
+      db.update(
+        "SearchHistory",
+        {
+          "searchtime": DateTime.now().toString(),
+        },
+        where: "query = ?",
+        whereArgs: [query],
+      );
     });
     return FutureBuilder(
       future: http.get(
@@ -160,6 +170,25 @@ class AnimeSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    if (kDebugMode) {
+      return StatefulBuilder(builder: (context, setState) {
+        return Stack(
+          children: [
+            buildHistory(context),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: TextButton(
+                child: const Text("Debug Purge DB"),
+                onPressed: () => setState(() {
+                  purgeTheDatabase();
+                }),
+              ),
+            ),
+          ],
+        );
+      });
+    }
     return buildHistory(context);
   }
 
