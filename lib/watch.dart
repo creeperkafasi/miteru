@@ -44,11 +44,7 @@ class _WatchPageState extends State<WatchPage> {
               future: playerController != null
                   ? Future.value("Ok")
                   : Future.sync(() async {
-                      final sourceUrl = Uri.parse(
-                        "https://allanimenews.com${hexToAscii(widget.source["sourceUrl"].toString().split("#")[1]).replaceFirst("clock", "clock.json")}",
-                      );
-                      final source = await http.get(sourceUrl);
-                      final url = jsonDecode(source.body)["links"][0]["link"];
+                      var url = await extractSource(widget.source);
                       playerController = VideoPlayerController.network(url);
                       await playerController!.initialize();
                       aspectRatio = playerController!.value.aspectRatio;
@@ -82,6 +78,15 @@ class _WatchPageState extends State<WatchPage> {
       ),
     );
   }
+}
+
+Future<String> extractSource(sourceObj) async {
+  final sourceUrl = Uri.parse(
+    "https://allanimenews.com${hexToAscii(sourceObj["sourceUrl"].toString().split("#")[1]).replaceFirst("clock", "clock.json")}",
+  );
+  final source = await http.get(sourceUrl);
+  final url = jsonDecode(source.body)["links"][0]["link"];
+  return url.toString();
 }
 
 String hexToAscii(String hexString) => List.generate(

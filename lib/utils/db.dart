@@ -16,11 +16,21 @@ Future<Database> getAppDb() async {
               UNIQUE(query)
             );
           """
+          """
+            CREATE TABLE IF NOT EXISTS Downloads (
+              showId TEXT,
+              episodeNum INTEGER,
+              translationType INTEGER,
+              downloadLocation TEXT,
+            );
+          """,
         );
       },
     ),
   );
 }
+
+const transLationTypes = {"sub": 0, "dub": 1};
 
 /// DO NOT USE IN PRODUCTION CODE, DEBUG PURPOSES ONLY
 /// (Although it shouldn't work in prod anyways)
