@@ -13,7 +13,7 @@ Watch anime without ads or bullshit
 - I also don't plan on accepting any dontaions as I see this as just a passion project
 
 ## Download
-You can download the latest apk release from the actions tab.
+[Click here to download the latest version](https://nightly.link/creeperkafasi/miteru/workflows/main/master/miteru.apk.zip)
 
 ## Building
 `flutter run` to run in debug mode
