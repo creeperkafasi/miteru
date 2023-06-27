@@ -47,7 +47,10 @@ class _WatchPageState extends State<WatchPage> {
                       final sourceUrl = Uri.parse(
                         "https://allanimenews.com${hexToAscii(widget.source["sourceUrl"].toString().split("#")[1]).replaceFirst("clock", "clock.json")}",
                       );
-                      final source = await http.get(sourceUrl);
+                      final source = await http.get(
+                        sourceUrl,
+                        headers: {"Referer": "https://allanime.to"},
+                      );
                       final url = jsonDecode(source.body)["links"][0]["link"];
                       playerController = VideoPlayerController.network(url);
                       await playerController!.initialize();

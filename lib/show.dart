@@ -48,6 +48,7 @@ class _ShowOverviewState extends State<ShowOverview> {
         body: FutureBuilder(
           future: http.get(
             Uri.parse("https://allanime.to/anime/${widget.showData["_id"]}"),
+            headers: {"Referer": "https://allanime.to"},
           ),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
@@ -175,8 +176,11 @@ class _ShowOverviewState extends State<ShowOverview> {
       builder: (contex) =>
           SimpleDialog(title: const Text("Select Server:"), children: [
         FutureBuilder(
-          future: http.get(Uri.parse(
-              'https://api.allanime.to/allanimeapi?variables={%22showId%22:%22$showId%22,%22translationType%22:%22$translationType%22,%22episodeString%22:%22$episodeString%22}&query=query%20(\$showId:%20String!,%20\$translationType:%20VaildTranslationTypeEnumType!,%20\$episodeString:%20String!)%20{%20%20%20%20episode(%20%20%20%20%20%20%20%20showId:%20\$showId%20%20%20%20%20%20%20%20translationType:%20\$translationType%20%20%20%20%20%20%20%20episodeString:%20\$episodeString%20%20%20%20)%20{%20%20%20%20%20%20%20%20episodeString%20sourceUrls%20%20%20%20}}')),
+          future: http.get(
+            Uri.parse(
+                'https://api.allanime.to/allanimeapi?variables={%22showId%22:%22$showId%22,%22translationType%22:%22$translationType%22,%22episodeString%22:%22$episodeString%22}&query=query%20(\$showId:%20String!,%20\$translationType:%20VaildTranslationTypeEnumType!,%20\$episodeString:%20String!)%20{%20%20%20%20episode(%20%20%20%20%20%20%20%20showId:%20\$showId%20%20%20%20%20%20%20%20translationType:%20\$translationType%20%20%20%20%20%20%20%20episodeString:%20\$episodeString%20%20%20%20)%20{%20%20%20%20%20%20%20%20episodeString%20sourceUrls%20%20%20%20}}'),
+            headers: {"Referer": "https://allanime.to"},
+          ),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               final sources = jsonDecode(snapshot.data!.body)["data"]["episode"]

@@ -52,6 +52,7 @@ class AnimeSearchDelegate extends SearchDelegate {
           '?variables={"search":{"query":"$query"}}'
           '&extensions={"persistedQuery":{"version":1,"sha256Hash":"06327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a"}}',
         ),
+        headers: {"Referer": "https://allanime.to"},
       ),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
@@ -175,16 +176,16 @@ class AnimeSearchDelegate extends SearchDelegate {
         return Stack(
           children: [
             buildHistory(context),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: TextButton(
-                child: const Text("Debug Purge DB"),
-                onPressed: () => setState(() {
-                  purgeTheDatabase();
-                }),
-              ),
-            ),
+            // Positioned(
+            //   bottom: 0,
+            //   right: 0,
+            //   child: TextButton(
+            //     child: const Text("Debug Purge DB"),
+            //     onPressed: () => setState(() {
+            //       purgeTheDatabase();
+            //     }),
+            //   ),
+            // ),
           ],
         );
       });
