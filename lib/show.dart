@@ -1,23 +1,21 @@
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:miteru/watch.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 import 'package:text_scroll/text_scroll.dart';
 
-const sourceTypes = {
-  "Default": "m3u8",
-  "Sak": "mp4",
-  "Kir": "mp4",
-  "Default B": "mp4",
-  // "Ac": "m3u8", // not working
-  "S-mp4": "mp4",
-  "Uv-mp4": "mp4",
-  "Luf-mp4": "m3u8",
-};
+const allowedSourceNames = [
+  "Default",
+  "Sak",
+  "Kir",
+  "Default B",
+  "Ac",
+  "S-mp4",
+  "Uv-mp4",
+  "Luf-mp4",
+];
 
 class ShowOverview extends StatefulWidget {
   final dynamic showData;
@@ -88,19 +86,49 @@ class _ShowOverviewState extends State<ShowOverview> {
                           )
                         : Container(),
                     lastEpisode()["sub"] != null
-                        ? buildEpisodeList(
-                            context,
-                            "sub",
-                            "Sub",
-                            Icons.subtitles,
+                        ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ExpansionTile(
+                              title: const Text("Sub"),
+                              children: List.generate(
+                                lastEpisode()["sub"],
+                                (index) => TextButton.icon(
+                                  icon: const Icon(Icons.subtitles),
+                                  label: Text("Episode ${index + 1}"),
+                                  onPressed: () {
+                                    showSelectServerDialog(
+                                      context,
+                                      widget.showData["_id"],
+                                      "sub",
+                                      (index + 1).toString(),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
                           )
                         : Container(),
                     lastEpisode()["dub"] != null
-                        ? buildEpisodeList(
-                            context,
-                            "dub",
-                            "Dub",
-                            Icons.record_voice_over,
+                        ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ExpansionTile(
+                              title: const Text("Dub"),
+                              children: List.generate(
+                                lastEpisode()["dub"],
+                                (index) => TextButton.icon(
+                                  icon: const Icon(Icons.record_voice_over),
+                                  label: Text("Episode ${index + 1}"),
+                                  onPressed: () {
+                                    showSelectServerDialog(
+                                      context,
+                                      widget.showData["_id"],
+                                      "dub",
+                                      (index + 1).toString(),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
                           )
                         : Container(),
                   ],
@@ -113,114 +141,6 @@ class _ShowOverviewState extends State<ShowOverview> {
             return const Center(child: CircularProgressIndicator());
           },
         ));
-  }
-
-  Padding buildEpisodeList(
-    BuildContext context,
-    String translationType,
-    String title,
-    IconData icon,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ExpansionTile(
-        title: Text(title),
-        children: List.generate(
-          lastEpisode()[translationType],
-          (index) => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton.icon(
-                icon: Icon(icon),
-                label: Text("Episode ${index + 1}"),
-                onPressed: () {
-                  showSelectServerDialog(
-                    context,
-                    widget.showData["_id"],
-                    translationType,
-                    (index + 1).toString(),
-                    (context, source) {
-                      Navigator.pop(context);
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => WatchPage(
-                              source: source,
-                              showData: widget.showData,
-                            ),
-                          ));
-                    },
-                  );
-                },
-              ),
-              // const VerticalDivider(),
-              TextButton.icon(
-                onPressed: () {
-                  showSelectServerDialog(
-                    context,
-                    widget.showData["_id"],
-                    translationType,
-                    (index + 1).toString(),
-                    onlyType: "mp4",
-                    (_, source) async {
-                      final waitingSB =
-                          ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Extracting source...."),
-                        ),
-                      );
-                      final sourceURL = await extractSource(source);
-                      waitingSB.close();
-
-                      Dio().download(
-                        sourceURL,
-                        "${(await getDownloadsDirectory())!.path}"
-                        "/Miteru/Downloads/${widget.showData["_id"]}"
-                        "/$translationType/$index.mp4",
-                        onReceiveProgress: (count, total) {
-                          //
-                        },
-                        options: Options(),
-                      );
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: [
-                              const Text("Download Started! "),
-                              const VerticalDivider(),
-                              TextButton(
-                                onPressed: () {
-                                  // TODO: Add on download start view downloads button
-                                },
-                                child: const Text(
-                                  "Show Downloads",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-                // child: const Row(
-                //   children: [
-                //     Text("Download"),
-                //     Icon(Icons.download_outlined),
-                //   ],
-                // ),
-                label: const Text("Download"),
-                icon: const Icon(Icons.download_outlined),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   lastEpisode() {
@@ -245,48 +165,49 @@ class _ShowOverviewState extends State<ShowOverview> {
   }
 
   Future<dynamic> showSelectServerDialog(
-      BuildContext context,
-      String showId,
-      String translationType,
-      String episodeString,
-      void Function(BuildContext context, dynamic source) onSelect,
-      {String? onlyType}) {
+    BuildContext context,
+    String showId,
+    String translationType,
+    String episodeString,
+  ) {
     return showDialog(
       context: context,
-      builder: (contex) {
-        return SimpleDialog(title: const Text("Select Server:"), children: [
-          FutureBuilder(
-            future: http.get(Uri.parse(
-                'https://api.allanime.to/allanimeapi?variables={%22showId%22:%22$showId%22,%22translationType%22:%22$translationType%22,%22episodeString%22:%22$episodeString%22}&query=query%20(\$showId:%20String!,%20\$translationType:%20VaildTranslationTypeEnumType!,%20\$episodeString:%20String!)%20{%20%20%20%20episode(%20%20%20%20%20%20%20%20showId:%20\$showId%20%20%20%20%20%20%20%20translationType:%20\$translationType%20%20%20%20%20%20%20%20episodeString:%20\$episodeString%20%20%20%20)%20{%20%20%20%20%20%20%20%20episodeString%20sourceUrls%20%20%20%20}}')),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final sources = jsonDecode(snapshot.data!.body)["data"]
-                    ["episode"]["sourceUrls"] as List;
-                sources.removeWhere((source) =>
-                    !sourceTypes.keys.contains(source["sourceName"]));
-                if (onlyType != null) {
-                  sources.removeWhere(
-                    (source) => sourceTypes[source["sourceName"]] != onlyType,
-                  );
-                }
-                return Column(
-                  children: sources
-                      .map(
-                        (source) => TextButton(
-                          onPressed: () {
-                            onSelect(context, source);
-                          },
-                          child: Text(source["sourceName"]),
-                        ),
-                      )
-                      .toList(),
-                );
-              }
-              return const Center(child: CircularProgressIndicator());
-            },
-          ),
-        ]);
-      },
+      builder: (contex) =>
+          SimpleDialog(title: const Text("Select Server:"), children: [
+        FutureBuilder(
+          future: http.get(Uri.parse(
+              'https://api.allanime.to/allanimeapi?variables={%22showId%22:%22$showId%22,%22translationType%22:%22$translationType%22,%22episodeString%22:%22$episodeString%22}&query=query%20(\$showId:%20String!,%20\$translationType:%20VaildTranslationTypeEnumType!,%20\$episodeString:%20String!)%20{%20%20%20%20episode(%20%20%20%20%20%20%20%20showId:%20\$showId%20%20%20%20%20%20%20%20translationType:%20\$translationType%20%20%20%20%20%20%20%20episodeString:%20\$episodeString%20%20%20%20)%20{%20%20%20%20%20%20%20%20episodeString%20sourceUrls%20%20%20%20}}')),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final sources = jsonDecode(snapshot.data!.body)["data"]["episode"]
+                  ["sourceUrls"] as List;
+              sources.removeWhere((source) =>
+                  !allowedSourceNames.contains(source["sourceName"]));
+              return Column(
+                children: sources
+                    .map(
+                      (source) => TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => WatchPage(
+                                  source: source,
+                                  showData: widget.showData,
+                                ),
+                              ));
+                        },
+                        child: Text(source["sourceName"]),
+                      ),
+                    )
+                    .toList(),
+              );
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
+      ]),
     );
   }
 }
