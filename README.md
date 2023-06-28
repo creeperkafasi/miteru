@@ -5,8 +5,9 @@ Watch anime without ads or bullshit
 ## What this app *will* do:
 - Give you a large catalouge of anime to watch
 - Serve you all the content **ad-free**
+- Fetch you kitsu currenly watching list (In progress)
+- ~Update you kitsu tracking (WIP)~
 - ~Let you download your anime to watch on the go~ (Planned)
-- ~Let you track your progress with Kitsu/MAL/Anilist~ (Planned)
 ## What this app *will not* do
 - WE DO NOT HOST ANY CONTENT, WE ONLY ACT AS A MIRROR OF CONTENT ALREADY AVAILABLE ON THE INTERNET
 - ANY COPYRIGHT/DMCA TAKEDOWN REQUESTS SHOULD BE DIRECTED TOWARDS [THE SOURCE](https://allanime.to)

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:miteru/utils/kitsu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,6 +87,13 @@ class _TrackingScreenState extends State<TrackingScreen> {
               ],
             ),
           ),
+          Expanded(child: Container()),
+          TextButton.icon(
+            onPressed: () =>
+                SharedPreferences.getInstance().then((value) => value.clear()),
+            icon: const Icon(Icons.delete),
+            label: const Text("Clear Shared Preferences"),
+          )
         ],
       ),
     );

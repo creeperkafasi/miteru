@@ -8,11 +8,16 @@ import 'package:miteru/trackers.dart';
 import 'package:miteru/utils/kitsu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
   });
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Builder(builder: (context) {
@@ -37,184 +42,219 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ),
-        body: ListView(
-          children: [
-            HomePageShelf(
-              title: "Popular Today",
-              icon: const Icon(Icons.emoji_emotions_outlined),
-              color: Colors.pink,
-              shelfItems: Future.sync(() async {
-                // await Future.delayed(const Duration(seconds: 2));
-                final res = await http.get(
-                  Uri.parse(
-                    'https://api.allanime.to/allanimeapi?variables={"type":"anime","size":20,"dateRange":1,"page":1,"allowAdult":false,"allowUnknown":false}&extensions={"persistedQuery":{"version":1,"sha256Hash":"1fc9651b0d4c3b9dfd2fa6e1d50b8f4d11ce37f988c23b8ee20f82159f7c1147"}}',
-                  ),
-                  headers: {"Referer": "https://allanime.to"},
-                );
-                final resJson = jsonDecode(res.body);
-                return (resJson["data"]["queryPopular"]["recommendations"]
-                        as List)
-                    .map(
-                      (e) => InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ShowOverview(showData: e["anyCard"]),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SizedBox(
-                            width: 100,
-                            child: Column(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  child: Image.network(
-                                    e["anyCard"]["thumbnail"],
-                                    height: 130,
-                                  ),
-                                ),
-                                Text(
-                                  (e["anyCard"]["englishName"] ??
-                                          e["anyCard"]["name"])
-                                      .toString(),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+        body: RefreshIndicator(
+          onRefresh: () async {
+            setState(() {});
+          },
+          child: ListView(
+            children: [
+              HomePageShelf(
+                title: "Popular Today",
+                icon: const Icon(Icons.emoji_emotions_outlined),
+                color: Colors.pink,
+                shelfItems: Future.sync(() async {
+                  // await Future.delayed(const Duration(seconds: 2));
+                  final res = await http.get(
+                    Uri.parse(
+                      'https://api.allanime.to/allanimeapi?variables={"type":"anime","size":20,"dateRange":1,"page":1,"allowAdult":false,"allowUnknown":false}&extensions={"persistedQuery":{"version":1,"sha256Hash":"1fc9651b0d4c3b9dfd2fa6e1d50b8f4d11ce37f988c23b8ee20f82159f7c1147"}}',
+                    ),
+                    headers: {"Referer": "https://allanime.to"},
+                  );
+                  final resJson = jsonDecode(res.body);
+                  return (resJson["data"]["queryPopular"]["recommendations"]
+                          as List)
+                      .map(
+                        (e) => InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ShowOverview(showData: e["anyCard"]),
                             ),
                           ),
-                        ),
-                      ),
-                    )
-                    .toList();
-              }),
-            ),
-            HomePageShelf(
-              title: "Recent Uploads",
-              icon: const Icon(Icons.history),
-              color: Colors.lime,
-              shelfItems: Future.sync(() async {
-                // await Future.delayed(const Duration(seconds: 2));
-                final res = await http.get(
-                  Uri.parse(
-                    'https://api.allanime.to/allanimeapi?variables={%22search%22:{},%22limit%22:26,%22page%22:1,%22translationType%22:%22sub%22,%22countryOrigin%22:%22JP%22}&extensions={%22persistedQuery%22:{%22version%22:1,%22sha256Hash%22:%2206327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a%22}}',
-                  ),
-                  headers: {"Referer": "https://allanime.to"},
-                );
-                final items =
-                    jsonDecode(res.body)["data"]["shows"]["edges"] as List;
-                items.removeWhere(
-                  // filter out the garbage
-                  (element) =>
-                      (double.parse((element["score"] ?? 0).toString()) <= 6.5),
-                );
-                return (items)
-                    .map(
-                      (e) => InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ShowOverview(showData: e),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SizedBox(
-                            width: 100,
-                            child: Column(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  child: Image.network(
-                                    e["thumbnail"],
-                                    height: 130,
-                                  ),
-                                ),
-                                Text(
-                                  (e["englishName"] ?? e["name"]).toString(),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList();
-              }),
-            ),
-            HomePageShelf(
-              title: "Kitsu tracker",
-              icon: const Icon(Icons.remove_red_eye_outlined),
-              shelfItems: Future.sync(() async {
-                final prefs = await SharedPreferences.getInstance();
-                if (prefs.getString("kitsu-User") == null) {
-                  throw Exception("No kitsu user found");
-                }
-                final lib = await KitsuApi.getUserLibrary(
-                  prefs.getString("kitsu-User") ?? "",
-                  filters: {
-                    "status": "current",
-                    "kind": "anime",
-                  },
-                );
-                return (lib["data"] as List)
-                    .map(
-                      (e) => FutureBuilder(
-                          future: KitsuApi.getLibEntryAnimeDetails(e["id"]),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              final title = snapshot
-                                  .data?["data"]?["attributes"]?["titles"]
-                                  .entries
-                                  .first
-                                  .value;
-                              return InkWell(
-                                onTap: title != null
-                                    ? () {
-                                        showSearch(
-                                          context: context,
-                                          delegate: AnimeSearchDelegate(),
-                                          query: title,
-                                        );
-                                      }
-                                    : null,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: SizedBox(
-                                    width: 100,
-                                    child: Column(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          child: Image.network(
-                                            snapshot.data!["data"]["attributes"]
-                                                ["posterImage"]["tiny"],
-                                            height: 130,
-                                          ),
-                                        ),
-                                        Text(
-                                          title ?? "",
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              width: 100,
+                              child: Column(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Image.network(
+                                      e["anyCard"]["thumbnail"],
+                                      height: 130,
                                     ),
                                   ),
-                                ),
-                              );
-                            }
-                            return Container();
-                          }),
-                    )
-                    .toList();
-              }),
-              color: Colors.orange,
-            )
-          ],
+                                  Text(
+                                    (e["anyCard"]["englishName"] ??
+                                            e["anyCard"]["name"])
+                                        .toString(),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList();
+                }),
+              ),
+              HomePageShelf(
+                title: "Recent Uploads",
+                icon: const Icon(Icons.history),
+                color: Colors.lime,
+                shelfItems: Future.sync(() async {
+                  // await Future.delayed(const Duration(seconds: 2));
+                  final res = await http.get(
+                    Uri.parse(
+                      'https://api.allanime.to/allanimeapi?variables={%22search%22:{},%22limit%22:26,%22page%22:1,%22translationType%22:%22sub%22,%22countryOrigin%22:%22JP%22}&extensions={%22persistedQuery%22:{%22version%22:1,%22sha256Hash%22:%2206327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a%22}}',
+                    ),
+                    headers: {"Referer": "https://allanime.to"},
+                  );
+                  final items =
+                      jsonDecode(res.body)["data"]["shows"]["edges"] as List;
+                  items.removeWhere(
+                    // filter out the garbage
+                    (element) =>
+                        (double.parse((element["score"] ?? 0).toString()) <=
+                            6.5),
+                  );
+                  return (items)
+                      .map(
+                        (e) => InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ShowOverview(showData: e),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              width: 100,
+                              child: Column(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Image.network(
+                                      e["thumbnail"],
+                                      height: 130,
+                                    ),
+                                  ),
+                                  Text(
+                                    (e["englishName"] ?? e["name"]).toString(),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList();
+                }),
+              ),
+              HomePageShelf(
+                title: "Kitsu tracker",
+                icon: const Icon(Icons.remove_red_eye_outlined),
+                shelfItems: Future.sync(() async {
+                  final prefs = await SharedPreferences.getInstance();
+                  if (prefs.getString("kitsu-User") == null) {
+                    throw Exception("Kitsu user not set");
+                  }
+                  final lib = await KitsuApi.getUserLibrary(
+                    prefs.getString("kitsu-User") ?? "",
+                    filters: {
+                      "status": "current",
+                      "kind": "anime",
+                    },
+                  );
+                  return (lib["data"] as List)
+                      .map(
+                        (e) => FutureBuilder(
+                            future: KitsuApi.getLibEntryAnimeDetails(e["id"]),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                final title = snapshot
+                                    .data?["data"]?["attributes"]?["titles"]
+                                    .entries
+                                    .first
+                                    .value;
+                                return InkWell(
+                                  onTap: title != null
+                                      ? () {
+                                          showSearch(
+                                            context: context,
+                                            delegate: AnimeSearchDelegate(),
+                                            query: title,
+                                          );
+                                        }
+                                      : null,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: SizedBox(
+                                      width: 100,
+                                      child: Column(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            child: Image.network(
+                                              snapshot.data!["data"]
+                                                      ["attributes"]
+                                                  ["posterImage"]["tiny"],
+                                              height: 130,
+                                            ),
+                                          ),
+                                          Text(
+                                            title ?? "",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                              return Container();
+                            }),
+                      )
+                      .toList();
+                }),
+                color: Colors.orange,
+                onErrorWidget: (error) => Container(
+                  color: Theme.of(context).colorScheme.error.withOpacity(0.5),
+                  width: MediaQuery.of(context).size.width,
+                  height: 168,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "$error",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onError,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TrackingScreen(),
+                            ),
+                          ),
+                          icon: const Icon(Icons.remove_red_eye_outlined),
+                          label: const Text("Open Tracking Menu"),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       );
     });
@@ -227,12 +267,15 @@ class HomePageShelf extends StatelessWidget {
   final Widget icon;
   final ColorSwatch color;
 
+  final Widget Function(Object)? onErrorWidget;
+
   const HomePageShelf({
     super.key,
     required this.title,
     required this.icon,
     required this.shelfItems,
     required this.color,
+    this.onErrorWidget,
   });
 
   @override
@@ -263,32 +306,36 @@ class HomePageShelf extends StatelessWidget {
                   ),
                 );
               }
-              if (snapshot.hasError) {
-                print(snapshot.error);
-              }
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: List.generate(
-                    10,
-                    (index) => Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Container(
-                              color: color[index * 100 + 100],
-                              height: 140,
-                              width: 100,
-                            ),
+              return Stack(
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: List.generate(
+                        10,
+                        (index) => Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Container(
+                                  color: color[index * 100 + 100],
+                                  height: 140,
+                                  width: 100,
+                                ),
+                              ),
+                              const Text("Loading..."),
+                            ],
                           ),
-                          const Text("Loading..."),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  snapshot.hasError && onErrorWidget != null
+                      ? onErrorWidget!(snapshot.error!)
+                      : Container(),
+                ],
               );
             },
           ),
