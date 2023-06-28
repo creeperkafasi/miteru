@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:miteru/search.dart';
 import 'package:http/http.dart' as http;
 import 'package:miteru/show.dart';
+import 'package:miteru/trackers.dart';
+import 'package:miteru/utils/kitsu.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({
@@ -18,11 +21,20 @@ class HomePage extends StatelessWidget {
           title: const Text("Miteru"),
           actions: [
             IconButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TrackingScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.remove_red_eye_outlined),
+            ),
+            IconButton(
               onPressed: () {
                 showSearch(context: context, delegate: AnimeSearchDelegate());
               },
               icon: const Icon(Icons.search),
-            )
+            ),
           ],
         ),
         body: ListView(
@@ -47,7 +59,8 @@ class HomePage extends StatelessWidget {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ShowOverview(showData: e["anyCard"]),
+                            builder: (context) =>
+                                ShowOverview(showData: e["anyCard"]),
                           ),
                         ),
                         child: Padding(
@@ -132,6 +145,75 @@ class HomePage extends StatelessWidget {
                     .toList();
               }),
             ),
+            HomePageShelf(
+              title: "Kitsu tracker",
+              icon: const Icon(Icons.remove_red_eye_outlined),
+              shelfItems: Future.sync(() async {
+                final prefs = await SharedPreferences.getInstance();
+                if (prefs.getString("kitsu-User") == null) {
+                  throw Exception("No kitsu user found");
+                }
+                final lib = await KitsuApi.getUserLibrary(
+                  prefs.getString("kitsu-User") ?? "",
+                  filters: {
+                    "status": "current",
+                    "kind": "anime",
+                  },
+                );
+                return (lib["data"] as List)
+                    .map(
+                      (e) => FutureBuilder(
+                          future: KitsuApi.getLibEntryAnimeDetails(e["id"]),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              final title = snapshot
+                                  .data?["data"]?["attributes"]?["titles"]
+                                  .entries
+                                  .first
+                                  .value;
+                              return InkWell(
+                                onTap: title != null
+                                    ? () {
+                                        showSearch(
+                                          context: context,
+                                          delegate: AnimeSearchDelegate(),
+                                          query: title,
+                                        );
+                                      }
+                                    : null,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SizedBox(
+                                    width: 100,
+                                    child: Column(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          child: Image.network(
+                                            snapshot.data!["data"]["attributes"]
+                                                ["posterImage"]["tiny"],
+                                            height: 130,
+                                          ),
+                                        ),
+                                        Text(
+                                          title ?? "",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return Container();
+                          }),
+                    )
+                    .toList();
+              }),
+              color: Colors.orange,
+            )
           ],
         ),
       );
