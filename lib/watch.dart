@@ -44,8 +44,12 @@ class _WatchPageState extends State<WatchPage> {
               future: playerController != null
                   ? Future.value("Ok")
                   : Future.sync(() async {
+                      final decryptedClockUrl = decryptAllAnime(
+                        "1234567890123456789",
+                        widget.source["sourceUrl"].toString().split("##")[1],
+                      );
                       final sourceUrl = Uri.parse(
-                        "https://allanimenews.com${hexToAscii(widget.source["sourceUrl"].toString().split("#")[1]).replaceFirst("clock", "clock.json")}",
+                        "https://allanimenews.com${decryptedClockUrl.replaceFirst("clock", "clock.json")}",
                       );
                       final source = await http.get(
                         sourceUrl,
@@ -92,3 +96,30 @@ String hexToAscii(String hexString) => List.generate(
       (i) => String.fromCharCode(
           int.parse(hexString.substring(i * 2, (i * 2) + 2), radix: 16)),
     ).join();
+
+// Allanime XOR cipher
+
+String decryptAllAnime(String password, String target) {
+  List<int> data = _hexToBytes(target);
+
+  Iterable<String> genexp() sync* {
+    for (int segment in data) {
+      for (int i = 0; i < password.length; i++) {
+        segment ^= password.codeUnitAt(i);
+      }
+      yield String.fromCharCode(segment);
+    }
+  }
+
+  return genexp().join();
+}
+
+List<int> _hexToBytes(String hexString) {
+  List<int> bytes = [];
+  for (int i = 0; i < hexString.length; i += 2) {
+    String hex = hexString.substring(i, i + 2);
+    int byteValue = int.parse(hex, radix: 16);
+    bytes.add(byteValue);
+  }
+  return bytes;
+}

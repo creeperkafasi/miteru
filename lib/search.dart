@@ -50,7 +50,7 @@ class AnimeSearchDelegate extends SearchDelegate {
     return FutureBuilder(
       future: http.get(
         Uri.parse(
-          '$allAnimeBase/allanimeapi'
+          '$allAnimeBase/api'
           '?variables={"search":{"query":"$query"}}'
           '&extensions={"persistedQuery":{"version":1,"sha256Hash":"06327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a"}}',
         ),
