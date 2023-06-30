@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:miteru/search.dart';
-import 'package:http/http.dart' as http;
 import 'package:miteru/show.dart';
 import 'package:miteru/trackers.dart';
 import 'package:miteru/utils/allanime.dart';

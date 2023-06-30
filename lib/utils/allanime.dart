@@ -76,7 +76,7 @@ class AllanimeAPI {
 
   static Future<Map> episodeInfo(
     String showId,
-    int episode,
+    String episode,
     String translationType,
   ) async {
     final res = await http.get(
@@ -111,8 +111,43 @@ class AllanimeAPI {
     );
     return jsonDecode(res.body);
   }
-  // Allanime XOR cipher
 
+  static Future<Map> showInfo(
+    String showId,
+  ) async {
+    final res = await http.get(
+      Uri.parse(
+        "$allanimeApiBase"
+        """?variables=
+        {
+          "id": "$showId"
+        }
+        """
+        """&query=
+        query(\$id: String!) {
+          show(_id: \$id) {
+            _id
+            name
+            englishName
+            nativeName
+            airedEnd
+            airedStart
+            genres
+            isAdult
+            description
+            banner
+            thumbnail
+            availableEpisodesDetail
+          }
+        }
+        """,
+      ),
+      headers: headersBase,
+    );
+    return jsonDecode(res.body);
+  }
+
+  // Allanime XOR cipher
   static String decryptAllAnime(String password, String target) {
     List<int> data = _hexToBytes(target);
 
