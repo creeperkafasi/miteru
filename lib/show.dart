@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:miteru/search.dart';
+import 'package:miteru/utils/allanime.dart';
 import 'package:miteru/watch.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
@@ -29,6 +30,7 @@ class ShowOverview extends StatefulWidget {
 class _ShowOverviewState extends State<ShowOverview> {
   @override
   Widget build(BuildContext context) {
+    print(widget.showData);
     return Scaffold(
         appBar: AppBar(
           title: SizedBox(
@@ -102,7 +104,7 @@ class _ShowOverviewState extends State<ShowOverview> {
                                       context,
                                       widget.showData["_id"],
                                       "sub",
-                                      (index + 1).toString(),
+                                      index + 1,
                                     );
                                   },
                                 ),
@@ -125,7 +127,7 @@ class _ShowOverviewState extends State<ShowOverview> {
                                       context,
                                       widget.showData["_id"],
                                       "dub",
-                                      (index + 1).toString(),
+                                      index + 1,
                                     );
                                   },
                                 ),
@@ -170,22 +172,22 @@ class _ShowOverviewState extends State<ShowOverview> {
     BuildContext context,
     String showId,
     String translationType,
-    String episodeString,
+    int episodeString,
   ) {
     return showDialog(
       context: context,
       builder: (contex) =>
           SimpleDialog(title: const Text("Select Server:"), children: [
         FutureBuilder(
-          future: http.get(
-            Uri.parse(
-                '${AnimeSearchDelegate.allAnimeBase}/api?variables={%22showId%22:%22$showId%22,%22translationType%22:%22$translationType%22,%22episodeString%22:%22$episodeString%22}&query=query%20(\$showId:%20String!,%20\$translationType:%20VaildTranslationTypeEnumType!,%20\$episodeString:%20String!)%20{%20%20%20%20episode(%20%20%20%20%20%20%20%20showId:%20\$showId%20%20%20%20%20%20%20%20translationType:%20\$translationType%20%20%20%20%20%20%20%20episodeString:%20\$episodeString%20%20%20%20)%20{%20%20%20%20%20%20%20%20episodeString%20sourceUrls%20%20%20%20}}'),
-            headers: {"Referer": "https://allanime.to"},
+          future: AllanimeAPI.episodeInfo(
+            showId,
+            episodeString,
+            translationType,
           ),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              final sources = jsonDecode(snapshot.data!.body)["data"]["episode"]
-                  ["sourceUrls"] as List;
+              final sources =
+                  snapshot.data!["data"]["episode"]["sourceUrls"] as List;
               sources.removeWhere((source) =>
                   !allowedSourceNames.contains(source["sourceName"]));
               return Column(
@@ -216,4 +218,3 @@ class _ShowOverviewState extends State<ShowOverview> {
     );
   }
 }
-

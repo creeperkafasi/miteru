@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:miteru/utils/allanime.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
@@ -44,7 +45,7 @@ class _WatchPageState extends State<WatchPage> {
               future: playerController != null
                   ? Future.value("Ok")
                   : Future.sync(() async {
-                      final decryptedClockUrl = decryptAllAnime(
+                      final decryptedClockUrl = AllanimeAPI.decryptAllAnime(
                         "1234567890123456789",
                         widget.source["sourceUrl"].toString().split("##")[1],
                       );
@@ -89,37 +90,4 @@ class _WatchPageState extends State<WatchPage> {
       ),
     );
   }
-}
-
-String hexToAscii(String hexString) => List.generate(
-      hexString.length ~/ 2,
-      (i) => String.fromCharCode(
-          int.parse(hexString.substring(i * 2, (i * 2) + 2), radix: 16)),
-    ).join();
-
-// Allanime XOR cipher
-
-String decryptAllAnime(String password, String target) {
-  List<int> data = _hexToBytes(target);
-
-  Iterable<String> genexp() sync* {
-    for (int segment in data) {
-      for (int i = 0; i < password.length; i++) {
-        segment ^= password.codeUnitAt(i);
-      }
-      yield String.fromCharCode(segment);
-    }
-  }
-
-  return genexp().join();
-}
-
-List<int> _hexToBytes(String hexString) {
-  List<int> bytes = [];
-  for (int i = 0; i < hexString.length; i += 2) {
-    String hex = hexString.substring(i, i + 2);
-    int byteValue = int.parse(hex, radix: 16);
-    bytes.add(byteValue);
-  }
-  return bytes;
 }

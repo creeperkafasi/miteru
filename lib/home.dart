@@ -5,6 +5,7 @@ import 'package:miteru/search.dart';
 import 'package:http/http.dart' as http;
 import 'package:miteru/show.dart';
 import 'package:miteru/trackers.dart';
+import 'package:miteru/utils/allanime.dart';
 import 'package:miteru/utils/kitsu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -53,14 +54,7 @@ class _HomePageState extends State<HomePage> {
                 icon: const Icon(Icons.emoji_emotions_outlined),
                 color: Colors.pink,
                 shelfItems: Future.sync(() async {
-                  // await Future.delayed(const Duration(seconds: 2));
-                  final res = await http.get(
-                    Uri.parse(
-                      '${AnimeSearchDelegate.allAnimeBase}/api?variables={"type":"anime","size":20,"dateRange":1,"page":1,"allowAdult":false,"allowUnknown":false}&extensions={"persistedQuery":{"version":1,"sha256Hash":"1fc9651b0d4c3b9dfd2fa6e1d50b8f4d11ce37f988c23b8ee20f82159f7c1147"}}',
-                    ),
-                    headers: {"Referer": "https://allanime.to"},
-                  );
-                  final resJson = jsonDecode(res.body);
+                  final resJson = await AllanimeAPI.queryPopular();
                   return (resJson["data"]["queryPopular"]["recommendations"]
                           as List)
                       .map(
@@ -105,17 +99,12 @@ class _HomePageState extends State<HomePage> {
                 icon: const Icon(Icons.history),
                 color: Colors.lime,
                 shelfItems: Future.sync(() async {
-                  // await Future.delayed(const Duration(seconds: 2));
-                  final res = await http.get(
-                    Uri.parse(
-                      '${AnimeSearchDelegate.allAnimeBase}/api?variables={%22search%22:{},%22limit%22:26,%22page%22:1,%22translationType%22:%22sub%22,%22countryOrigin%22:%22JP%22}&extensions={%22persistedQuery%22:{%22version%22:1,%22sha256Hash%22:%2206327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a%22}}',
-                    ),
-                    headers: {"Referer": "https://allanime.to"},
-                  );
+                  // Searching with an empty query returns all shows sorted by recent
                   final items =
-                      jsonDecode(res.body)["data"]["shows"]["edges"] as List;
+                      (await AllanimeAPI.search("", origin: "JP"))["data"]
+                          ["shows"]["edges"] as List;
+                  // Filter out the garbage
                   items.removeWhere(
-                    // filter out the garbage
                     (element) =>
                         (double.parse((element["score"] ?? 0).toString()) <=
                             6.5),

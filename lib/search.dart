@@ -1,13 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:miteru/show.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:miteru/utils/allanime.dart';
 import 'package:miteru/utils/db.dart';
 
 class AnimeSearchDelegate extends SearchDelegate {
-  static const allAnimeBase = "https://api.allanime.day";
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -48,17 +45,10 @@ class AnimeSearchDelegate extends SearchDelegate {
       );
     });
     return FutureBuilder(
-      future: http.get(
-        Uri.parse(
-          '$allAnimeBase/api'
-          '?variables={"search":{"query":"$query"}}'
-          '&extensions={"persistedQuery":{"version":1,"sha256Hash":"06327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a"}}',
-        ),
-        headers: {"Referer": "https://allanime.to"},
-      ),
+      future: AllanimeAPI.search(query),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          final data = jsonDecode(snapshot.data!.body);
+          final data = snapshot.data!;
           final items = data["data"]["shows"]["edges"] as List;
           if (items.isEmpty) {
             return const Center(
