@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:miteru/utils/allanime.dart';
@@ -29,22 +30,11 @@ class _ShowOverviewState extends State<ShowOverview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: SizedBox(
-          height: 32,
-          child: TextScroll(
-            widget.showData["englishName"] ?? widget.showData["name"],
-            velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-            delayBefore: const Duration(seconds: 2),
-            fadedBorder: true,
-            fadedBorderWidth: 0.05,
-            pauseBetween: const Duration(seconds: 2),
-            intervalSpaces: 10,
-          ),
-        ),
+        forceMaterialTransparency: true,
         bottomOpacity: 0.0,
       ),
-      // extendBodyBehindAppBar: true,
       body: SingleChildScrollView(
         child: FutureBuilder(
           future: AllanimeAPI.showInfo(widget.showData["_id"]),
@@ -59,81 +49,81 @@ class _ShowOverviewState extends State<ShowOverview> {
                               ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
                           child: ShaderMask(
                             shaderCallback: (rect) {
-                              return const LinearGradient(
+                              return LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                colors: [Colors.black, Colors.transparent],
+                                colors: [
+                                  Colors.black.withOpacity(0.4),
+                                  Colors.transparent,
+                                ],
                               ).createShader(
                                   Rect.fromLTRB(0, 0, rect.width, rect.height));
                             },
                             blendMode: BlendMode.dstIn,
-                            child: Image.network(showInfo["banner"]),
+                            child: Image.network(
+                              showInfo["banner"],
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.network(
+                                "https://placehold.co/64x108/png?text=?",
+                              ),
+                            ),
                           ),
                         )
                       : Container(),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 8.0),
+                    padding: const EdgeInsets.only(top: 48.0),
                     child: Column(
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.0),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                elevation: 8,
+                                clipBehavior: Clip.antiAlias,
+                                child: Image.network(
+                                  showInfo["thumbnail"],
+                                  height: 180,
+                                ),
                               ),
-                              elevation: 8,
-                              clipBehavior: Clip.antiAlias,
-                              child: Image.network(
-                                showInfo["thumbnail"],
-                                height: 180,
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                height: 180,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .background
-                                            .withOpacity(0.3),
-                                        child: Padding(
+                              Expanded(
+                                child: SizedBox(
+                                  // height: 180,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(2.0),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Padding(
                                           padding: const EdgeInsets.all(4.0),
                                           child: Text(
                                             widget.showData["englishName"] ??
                                                 widget.showData["name"],
-                                            maxLines: 2,
+                                            // maxLines: 2,
                                             textAlign: TextAlign.center,
-                                            overflow: TextOverflow.ellipsis,
+                                            // overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               fontSize: 24,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      showInfo["nativeName"] != null
-                                          ? Container(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .background
-                                                  .withOpacity(0.4),
-                                              child: Padding(
+                                        showInfo["nativeName"] != null
+                                            ? Padding(
                                                 padding:
                                                     const EdgeInsets.all(4.0),
                                                 child: Text(
                                                   showInfo["nativeName"],
-                                                  maxLines: 2,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  // maxLines: 2,
+                                                  // overflow:
+                                                  //     TextOverflow.ellipsis,
                                                   textAlign: TextAlign.center,
                                                   style: const TextStyle(
                                                     fontSize: 16,
@@ -141,52 +131,55 @@ class _ShowOverviewState extends State<ShowOverview> {
                                                     fontStyle: FontStyle.italic,
                                                   ),
                                                 ),
-                                              ),
-                                            )
-                                          : Container(),
-                                      Expanded(
-                                        child: ListView(
-                                          scrollDirection: Axis.horizontal,
-                                          children: (showInfo["genres"] as List)
-                                              .map(
-                                                (e) => Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(4.0),
-                                                  child: Chip(
-                                                    elevation: 3,
-                                                    backgroundColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .primaryContainer,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                        12.0,
-                                                      ),
-                                                    ),
-                                                    label: Text(e.toString()),
-                                                    shadowColor: Colors.black,
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                      0.0,
-                                                    ),
-                                                  ),
-                                                ),
                                               )
-                                              .toList(),
-                                        ),
-                                      ),
-                                    ],
+                                            : Container(),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              // ignore: unnecessary_cast
+                              const SizedBox(
+                                width: 12.0,
+                              ) as Widget
+                            ]
+                                .followedBy(
+                                  (showInfo["genres"] as List).map(
+                                    (e) => Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Chip(
+                                        elevation: 3,
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primaryContainer,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12.0,
+                                          ),
+                                        ),
+                                        label: Text(e.toString()),
+                                        shadowColor: Colors.black,
+                                        padding: const EdgeInsets.all(
+                                          0.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
                         ),
                         showInfo["description"] != null
                             ? Padding(
-                                padding: const EdgeInsets.all(4.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0, vertical: 4.0),
                                 child: Card(
                                   elevation: 2,
                                   child: Padding(
@@ -215,7 +208,8 @@ class _ShowOverviewState extends State<ShowOverview> {
                             : Container(),
                         // const Divider(),
                         Padding(
-                          padding: const EdgeInsets.all(4.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0, vertical: 4.0),
                           child: Card(
                             elevation: 2,
                             child: DefaultTabController(
@@ -223,7 +217,7 @@ class _ShowOverviewState extends State<ShowOverview> {
                               child: Column(
                                 children: [
                                   const Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.only(top: 8.0),
                                     child: Text(
                                       "Watch Now",
                                       style: TextStyle(fontSize: 16),
@@ -242,38 +236,40 @@ class _ShowOverviewState extends State<ShowOverview> {
                                     child: TabBarView(
                                       children: ["sub", "dub", "raw"]
                                           .map(
-                                            (e) => Padding(
+                                            (tl) => Padding(
                                               padding:
                                                   const EdgeInsets.all(8.0),
-                                              child: ListView.builder(
-                                                primary: false,
-                                                itemCount: showInfo[
-                                                        "availableEpisodesDetail"][e]
-                                                    .length,
-                                                itemBuilder: (context, index) =>
-                                                    TextButton.icon(
-                                                  onPressed: () =>
-                                                      showSelectServerDialog(
-                                                    context,
-                                                    showInfo["_id"],
-                                                    e,
-                                                    showInfo["availableEpisodesDetail"]
-                                                            [e]
-                                                        .reversed
-                                                        .toList()[index],
-                                                  ),
-                                                  icon: Icon({
-                                                    "sub": Icons
-                                                        .subtitles_outlined,
-                                                    "dub": Icons
-                                                        .record_voice_over_outlined,
-                                                    "raw": Icons
-                                                        .cleaning_services_outlined,
-                                                  }[e]),
-                                                  label: Text(
-                                                    "Episode "
-                                                    "${showInfo["availableEpisodesDetail"][e].reversed.toList()[index]}",
-                                                  ),
+                                              child: SingleChildScrollView(
+                                                child: Column(
+                                                  children: (showInfo[
+                                                              "availableEpisodesDetail"]
+                                                          [tl] as List)
+                                                      .reversed
+                                                      .map(
+                                                        (episode) =>
+                                                            TextButton.icon(
+                                                          onPressed: () =>
+                                                              showSelectServerDialog(
+                                                            context,
+                                                            showInfo["_id"],
+                                                            tl,
+                                                            episode,
+                                                          ),
+                                                          icon: Icon({
+                                                            "sub": Icons
+                                                                .subtitles_outlined,
+                                                            "dub": Icons
+                                                                .record_voice_over_outlined,
+                                                            "raw": Icons
+                                                                .cleaning_services_outlined,
+                                                          }[tl]),
+                                                          label: Text(
+                                                            "Episode "
+                                                            "$episode",
+                                                          ),
+                                                        ),
+                                                      )
+                                                      .toList(),
                                                 ),
                                               ),
                                             ),
