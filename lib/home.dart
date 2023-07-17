@@ -188,8 +188,9 @@ class _HomePageState extends State<HomePage> {
                                                 BorderRadius.circular(8.0),
                                             child: Image.network(
                                               snapshot.data!["data"]
-                                                      ["attributes"]
-                                                  ["posterImage"]["tiny"],
+                                                          ["attributes"]
+                                                      ["posterImage"]["tiny"] ??
+                                                  "https://placehold.co/90x130/png?text=?",
                                               height: 130,
                                             ),
                                           ),
