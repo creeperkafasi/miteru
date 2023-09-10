@@ -47,10 +47,10 @@ class _WatchPageState extends State<WatchPage> {
                   : Future.sync(() async {
                       final decryptedClockUrl = AllanimeAPI.decryptAllAnime(
                         "1234567890123456789",
-                        widget.source["sourceUrl"].toString().split("##")[1],
+                        widget.source["sourceUrl"].toString().split("--")[1],
                       );
                       final sourceUrl = Uri.parse(
-                        "https://allanimenews.com${decryptedClockUrl.replaceFirst("clock", "clock.json")}",
+                        "https://embed.ssbcontent.site${decryptedClockUrl.replaceFirst("clock", "clock.json")}",
                       );
                       final source = await http.get(
                         sourceUrl,

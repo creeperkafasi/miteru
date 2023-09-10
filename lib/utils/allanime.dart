@@ -154,7 +154,7 @@ class AllanimeAPI {
     Iterable<String> genexp() sync* {
       for (int segment in data) {
         for (int i = 0; i < password.length; i++) {
-          segment ^= password.codeUnitAt(i);
+          segment ^= 56;
         }
         yield String.fromCharCode(segment);
       }
