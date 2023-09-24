@@ -1,11 +1,9 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:miteru/utils/allanime.dart';
 import 'package:miteru/watch.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
-import 'package:text_scroll/text_scroll.dart';
 
 const allowedSourceNames = [
   "Default",

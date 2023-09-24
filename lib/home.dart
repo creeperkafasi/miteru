@@ -24,21 +24,45 @@ class _HomePageState extends State<HomePage> {
           title: const Text("Miteru"),
           actions: [
             IconButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const TrackingScreen(),
-                ),
-              ),
-              icon: const Icon(Icons.remove_red_eye_outlined),
-            ),
-            IconButton(
               onPressed: () {
                 showSearch(context: context, delegate: AnimeSearchDelegate());
               },
               icon: const Icon(Icons.search),
             ),
           ],
+        ),
+        drawer: Drawer(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListView(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: Text(
+                      "見てる",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 40,
+                      ),
+                    ),
+                  ),
+                ),
+                const Divider(),
+                TextButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TrackingScreen(),
+                    ),
+                  ),
+                  label: const Text("Tracking"),
+                  icon: const Icon(Icons.remove_red_eye_outlined),
+                ),
+              ],
+            ),
+          ),
         ),
         body: RefreshIndicator(
           onRefresh: () async {
