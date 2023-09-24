@@ -170,10 +170,41 @@ class _HomePageState extends State<HomePage> {
                                 return InkWell(
                                   onTap: title != null
                                       ? () {
-                                          showSearch(
-                                            context: context,
-                                            delegate: AnimeSearchDelegate(),
-                                            query: title,
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  FutureBuilder(
+                                                      future:
+                                                          AllanimeAPI.search(
+                                                              title),
+                                                      builder:
+                                                          (context, snapshot) {
+                                                        if (snapshot.hasData) {
+                                                          final results =
+                                                              snapshot.data![
+                                                                          "data"]
+                                                                      ["shows"]
+                                                                  ["edges"];
+                                                          if ((results as List)
+                                                              .isEmpty) {
+                                                            Navigator.pop(
+                                                                context);
+                                                          }
+
+                                                          return ShowOverview(
+                                                            showData:
+                                                                results[0],
+                                                          );
+                                                        }
+                                                        return const Expanded(
+                                                          child: Center(
+                                                            child:
+                                                                CircularProgressIndicator(),
+                                                          ),
+                                                        );
+                                                      }),
+                                            ),
                                           );
                                         }
                                       : null,
