@@ -158,86 +158,7 @@ class _HomePageState extends State<HomePage> {
                   );
                   return (lib["data"] as List)
                       .map(
-                        (e) => FutureBuilder(
-                            future: KitsuApi.getLibEntryAnimeDetails(e["id"]),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                final title = snapshot
-                                    .data?["data"]?["attributes"]?["titles"]
-                                    .entries
-                                    .first
-                                    .value;
-                                return InkWell(
-                                  onTap: title != null
-                                      ? () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  FutureBuilder(
-                                                      future:
-                                                          AllanimeAPI.search(
-                                                              title),
-                                                      builder:
-                                                          (context, snapshot) {
-                                                        if (snapshot.hasData) {
-                                                          final results =
-                                                              snapshot.data![
-                                                                          "data"]
-                                                                      ["shows"]
-                                                                  ["edges"];
-                                                          if ((results as List)
-                                                              .isEmpty) {
-                                                            Navigator.pop(
-                                                                context);
-                                                          }
-
-                                                          return ShowOverview(
-                                                            showData:
-                                                                results[0],
-                                                          );
-                                                        }
-                                                        return const Expanded(
-                                                          child: Center(
-                                                            child:
-                                                                CircularProgressIndicator(),
-                                                          ),
-                                                        );
-                                                      }),
-                                            ),
-                                          );
-                                        }
-                                      : null,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: SizedBox(
-                                      width: 100,
-                                      child: Column(
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            child: Image.network(
-                                              snapshot.data!["data"]
-                                                          ["attributes"]
-                                                      ["posterImage"]["tiny"] ??
-                                                  "https://placehold.co/90x130/png?text=?",
-                                              height: 130,
-                                            ),
-                                          ),
-                                          Text(
-                                            title ?? "",
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                              return Container();
-                            }),
+                        kitsuButton,
                       )
                       .toList();
                 }),
@@ -277,6 +198,72 @@ class _HomePageState extends State<HomePage> {
       );
     });
   }
+
+  FutureBuilder<dynamic> kitsuButton(e) => FutureBuilder(
+        future: KitsuApi.getLibEntryAnimeDetails(e["id"]),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final title = snapshot
+                .data?["data"]?["attributes"]?["titles"].entries.first.value;
+            return InkWell(
+              onTap: title != null
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FutureBuilder(
+                              future: AllanimeAPI.search(title),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  final results =
+                                      snapshot.data!["data"]["shows"]["edges"];
+                                  if ((results as List).isEmpty) {
+                                    Navigator.pop(context);
+                                  }
+
+                                  return ShowOverview(
+                                    showData: results[0],
+                                  );
+                                }
+                                return const Expanded(
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }),
+                        ),
+                      );
+                    }
+                  : null,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: 100,
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: Image.network(
+                          snapshot.data!["data"]["attributes"]["posterImage"]
+                                  ["tiny"] ??
+                              "https://placehold.co/90x130/png?text=?",
+                          height: 130,
+                        ),
+                      ),
+                      Text(
+                        title ?? "",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+          return Container();
+        },
+      );
 }
 
 class HomePageShelf extends StatelessWidget {
