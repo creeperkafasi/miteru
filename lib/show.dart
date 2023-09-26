@@ -205,81 +205,7 @@ class _ShowOverviewState extends State<ShowOverview> {
                               )
                             : Container(),
                         // const Divider(),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12.0, vertical: 4.0),
-                          child: Card(
-                            elevation: 2,
-                            child: DefaultTabController(
-                              length: 3,
-                              child: Column(
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 8.0),
-                                    child: Text(
-                                      "Watch Now",
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                  ),
-                                  const Divider(),
-                                  const TabBar(
-                                    tabs: [
-                                      Tab(child: Text("Sub")),
-                                      Tab(child: Text("Dub")),
-                                      Tab(child: Text("Raw")),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 360,
-                                    child: TabBarView(
-                                      children: ["sub", "dub", "raw"]
-                                          .map(
-                                            (tl) => Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: SingleChildScrollView(
-                                                child: Column(
-                                                  children: (showInfo[
-                                                              "availableEpisodesDetail"]
-                                                          [tl] as List)
-                                                      .reversed
-                                                      .map(
-                                                        (episode) =>
-                                                            TextButton.icon(
-                                                          onPressed: () =>
-                                                              showSelectServerDialog(
-                                                            context,
-                                                            showInfo["_id"],
-                                                            tl,
-                                                            episode,
-                                                          ),
-                                                          icon: Icon({
-                                                            "sub": Icons
-                                                                .subtitles_outlined,
-                                                            "dub": Icons
-                                                                .record_voice_over_outlined,
-                                                            "raw": Icons
-                                                                .cleaning_services_outlined,
-                                                          }[tl]),
-                                                          label: Text(
-                                                            "Episode "
-                                                            "$episode",
-                                                          ),
-                                                        ),
-                                                      )
-                                                      .toList(),
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                        episodesWidgetBuilder(showInfo, context),
                       ],
                     ),
                   ),
@@ -291,6 +217,76 @@ class _ShowOverviewState extends State<ShowOverview> {
             }
             return const Center(child: CircularProgressIndicator());
           },
+        ),
+      ),
+    );
+  }
+
+  Padding episodesWidgetBuilder(showInfo, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+      child: Card(
+        elevation: 2,
+        child: DefaultTabController(
+          length: 3,
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Text(
+                  "Watch Now",
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+              const Divider(),
+              const TabBar(
+                tabs: [
+                  Tab(child: Text("Sub")),
+                  Tab(child: Text("Dub")),
+                  Tab(child: Text("Raw")),
+                ],
+              ),
+              SizedBox(
+                height: 360,
+                child: TabBarView(
+                  children: ["sub", "dub", "raw"]
+                      .map(
+                        (tl) => Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: (showInfo["availableEpisodesDetail"][tl]
+                                      as List)
+                                  .reversed
+                                  .map(
+                                    (episode) => TextButton.icon(
+                                      onPressed: () => showSelectServerDialog(
+                                        context,
+                                        showInfo["_id"],
+                                        tl,
+                                        episode,
+                                      ),
+                                      icon: Icon({
+                                        "sub": Icons.subtitles_outlined,
+                                        "dub": Icons.record_voice_over_outlined,
+                                        "raw": Icons.cleaning_services_outlined,
+                                      }[tl]),
+                                      label: Text(
+                                        "Episode "
+                                        "$episode",
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
