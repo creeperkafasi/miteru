@@ -44,6 +44,7 @@ dependencies:
   shared_preferences: ^2.1.2
   fvp: ^0.8.0
   m3u_nullsafe: ^1.0.4
+  url_launcher: ^6.1.14
 
 dev_dependencies:
   flutter_test:

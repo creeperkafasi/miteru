@@ -2,6 +2,7 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:miteru/utils/allanime.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
@@ -143,7 +144,30 @@ class _WatchPageState extends State<WatchPage> {
                           },
                           iconData: Icons.high_quality,
                           title: "Quality",
-                        )
+                        ),
+                        OptionItem(
+                          onTap: () => launchUrl(
+                            widget.qualities[selectedQualityIndex].url
+                                    .toString()
+                                    .endsWith(".m3u8")
+                                ? Uri.parse(
+                                    "https://m3u8play.dev/?url="
+                                    "${widget.qualities[selectedQualityIndex].url.toString()}",
+                                  )
+                                : widget.qualities[selectedQualityIndex].url,
+                            mode: LaunchMode.externalApplication,
+                          ),
+                          iconData: Icons.open_in_browser,
+                          title: "Open in browser",
+                        ),
+                        OptionItem(
+                          onTap: () => launchUrl(
+                            widget.qualities[selectedQualityIndex].url,
+                            mode: LaunchMode.externalNonBrowserApplication,
+                          ),
+                          iconData: Icons.exit_to_app,
+                          title: "Open in external player",
+                        ),
                       ],
                       // autoPlay: true,
                       // fullScreenByDefault: true,
