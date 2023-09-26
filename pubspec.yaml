@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.6
+  http: ^1.1.0
   html: ^0.15.4
   text_scroll: ^0.2.0
   chewie: ^1.5.0
@@ -42,6 +42,7 @@ dependencies:
   cupertino_icons: ^1.0.5
   wakelock: ^0.6.2
   shared_preferences: ^2.1.2
+  fvp: ^0.8.0
 
 dev_dependencies:
   flutter_test:

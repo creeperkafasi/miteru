@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fvp/fvp.dart';
 import 'package:miteru/home.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -19,6 +20,8 @@ void main() async {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
 
+  registerWith();
+
   runApp(const AnimeApp());
 }
 
@@ -37,7 +40,10 @@ class _AnimeAppState extends State<AnimeApp> {
       debugShowMaterialGrid: false,
       title: "Miteru",
       theme: ThemeData.from(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.red,
+          // brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       home: const HomePage(),

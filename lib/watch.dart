@@ -36,6 +36,7 @@ class _WatchPageState extends State<WatchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: SafeArea(
         child: Container(
             color: Colors.black,
@@ -57,7 +58,8 @@ class _WatchPageState extends State<WatchPage> {
                         headers: {"Referer": "https://allanime.to"},
                       );
                       final url = jsonDecode(source.body)["links"][0]["link"];
-                      playerController = VideoPlayerController.network(url);
+                      playerController =
+                          VideoPlayerController.networkUrl(Uri.parse(url));
                       await playerController!.initialize();
                       aspectRatio = playerController!.value.aspectRatio;
                       return "Ok";
