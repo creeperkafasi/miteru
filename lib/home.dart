@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:miteru/search.dart';
 import 'package:miteru/show.dart';
 import 'package:miteru/trackers.dart';
@@ -9,7 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
+    required this.refreshFunc,
   });
+
+  final VoidCallback refreshFunc;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -23,6 +27,24 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           title: const Text("Miteru"),
           actions: [
+            Builder(builder: (context) {
+              final brightness = Theme.of(context).brightness;
+              return IconButton(
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  setState(() {
+                    prefs.setBool(
+                        "brightness", !(prefs.getBool("brightness") ?? true));
+                    widget.refreshFunc();
+                  });
+                },
+                icon: Icon(
+                  (brightness == Brightness.dark)
+                      ? Icons.dark_mode
+                      : Icons.light_mode,
+                ),
+              );
+            }),
             IconButton(
               onPressed: () {
                 showSearch(context: context, delegate: AnimeSearchDelegate());
