@@ -22,6 +22,6 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with: 
-          name: miteru.exe
-          path: build/windows/x64/release/miteru.exe
+          name: miteru.zip
+          path: build/windows/runner/release/
       
