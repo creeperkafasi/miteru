@@ -24,6 +24,8 @@ class _WatchPageState extends State<WatchPage> {
   VideoPlayerController? playerController;
   double aspectRatio = 16 / 9;
 
+  Duration? savedPosition;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +54,8 @@ class _WatchPageState extends State<WatchPage> {
               );
               return Chewie(
                 controller: ChewieController(
+                  startAt: savedPosition ?? Duration.zero,
+                  autoPlay: savedPosition != null,
                   videoPlayerController: playerController!,
                   aspectRatio: aspectRatio,
                   autoInitialize: true,
@@ -71,12 +75,17 @@ class _WatchPageState extends State<WatchPage> {
                                               padding:
                                                   const EdgeInsets.all(8.0),
                                               child: TextButton.icon(
-                                                onPressed: () => setState(() {
-                                                  playerController?.dispose();
-                                                  selectedQualityIndex = widget
-                                                      .qualities
-                                                      .indexOf(e);
-                                                }),
+                                                onPressed: () async {
+                                                  savedPosition =
+                                                      await playerController
+                                                          ?.position;
+                                                  setState(() {
+                                                    playerController?.dispose();
+                                                    selectedQualityIndex =
+                                                        widget.qualities
+                                                            .indexOf(e);
+                                                  });
+                                                },
                                                 icon:
                                                     const Icon(Icons.settings),
                                                 label: Text(e.name),
