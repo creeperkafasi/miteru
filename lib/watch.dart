@@ -1,22 +1,26 @@
-import 'dart:convert';
-
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:miteru/utils/allanime.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
 class WatchPage extends StatefulWidget {
   final dynamic source;
+  final List<Quality> qualities;
   final dynamic showData;
-  const WatchPage({super.key, required this.source, required this.showData});
+  const WatchPage(
+      {super.key,
+      required this.source,
+      required this.showData,
+      required this.qualities});
 
   @override
   State<WatchPage> createState() => _WatchPageState();
 }
 
 class _WatchPageState extends State<WatchPage> {
+  int selectedQualityIndex = 0;
+
   VideoPlayerController? playerController;
   double aspectRatio = 16 / 9;
 
@@ -29,8 +33,8 @@ class _WatchPageState extends State<WatchPage> {
   @override
   void dispose() {
     super.dispose();
-    Wakelock.disable();
     playerController?.dispose();
+    Wakelock.disable();
   }
 
   @override
@@ -42,53 +46,57 @@ class _WatchPageState extends State<WatchPage> {
             color: Colors.black,
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
-            child: FutureBuilder(
-              future: playerController != null
-                  ? Future.value("Ok")
-                  : Future.sync(() async {
-                      final decryptedClockUrl = AllanimeAPI.decryptAllAnime(
-                        "1234567890123456789",
-                        widget.source["sourceUrl"].toString().split("--")[1],
-                      );
-                      final sourceUrl = Uri.parse(
-                        "https://embed.ssbcontent.site${decryptedClockUrl.replaceFirst("clock", "clock.json")}",
-                      );
-                      final source = await http.get(
-                        sourceUrl,
-                        headers: {"Referer": "https://allanime.to"},
-                      );
-                      final url = jsonDecode(source.body)["links"][0]["link"];
-                      playerController =
-                          VideoPlayerController.networkUrl(Uri.parse(url));
-                      await playerController!.initialize();
-                      aspectRatio = playerController!.value.aspectRatio;
-                      return "Ok";
-                    }),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return Chewie(
-                    controller: ChewieController(
-                      videoPlayerController: playerController!,
-                      aspectRatio: aspectRatio,
-                      autoInitialize: true,
-                      // autoPlay: true,
-                      // fullScreenByDefault: true,
-                    ),
-                  );
-                }
-                if (snapshot.hasError) {
-                  return ErrorWidget(snapshot.error!);
-                }
-                return const Center(
-                  child: Column(
-                    children: [
-                      CircularProgressIndicator(),
-                      Text("Loading..."),
-                    ],
-                  ),
-                );
-              },
-            )),
+            child: Builder(builder: (context) {
+              playerController = VideoPlayerController.networkUrl(
+                widget.qualities[selectedQualityIndex].url,
+              );
+              return Chewie(
+                controller: ChewieController(
+                  videoPlayerController: playerController!,
+                  aspectRatio: aspectRatio,
+                  autoInitialize: true,
+                  additionalOptions: (context) => [
+                    OptionItem(
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: ((context) {
+                              return SimpleDialog(
+                                title: const Text("Select Quality:"),
+                                children: [
+                                  Column(
+                                      children: widget.qualities
+                                          .map(
+                                            (e) => Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: TextButton.icon(
+                                                onPressed: () => setState(() {
+                                                  playerController?.dispose();
+                                                  selectedQualityIndex = widget
+                                                      .qualities
+                                                      .indexOf(e);
+                                                }),
+                                                icon:
+                                                    const Icon(Icons.settings),
+                                                label: Text(e.name),
+                                              ),
+                                            ),
+                                          )
+                                          .toList()),
+                                ],
+                              );
+                            }));
+                      },
+                      iconData: Icons.high_quality,
+                      title: "Quality",
+                    )
+                  ],
+                  // autoPlay: true,
+                  // fullScreenByDefault: true,
+                ),
+              );
+            })),
       ),
     );
   }

@@ -43,6 +43,7 @@ dependencies:
   wakelock: ^0.6.2
   shared_preferences: ^2.1.2
   fvp: ^0.8.0
+  m3u_nullsafe: ^1.0.4
 
 dev_dependencies:
   flutter_test:

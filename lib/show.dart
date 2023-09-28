@@ -9,10 +9,10 @@ const allowedSourceNames = [
   "Default",
   "Sak",
   "Kir",
-  "Default B",
-  "Ac",
+  // "Default B",
+  // "Ac",
   "S-mp4",
-  "Uv-mp4",
+  // "Uv-mp4",
   "Luf-mp4",
 ];
 
@@ -260,12 +260,63 @@ class _ShowOverviewState extends State<ShowOverview> {
                                   .reversed
                                   .map(
                                     (episode) => TextButton.icon(
-                                      onPressed: () => showSelectServerDialog(
-                                        context,
-                                        showInfo["_id"],
-                                        tl,
-                                        episode,
-                                      ),
+                                      // onPressed: () => showSelectServerDialog(
+                                      //   context,
+                                      //   showInfo["_id"],
+                                      //   tl,
+                                      //   episode,
+                                      // ),
+                                      onPressed: () async {
+                                        showDialog(
+                                          barrierDismissible: false,
+                                          context: context,
+                                          builder: (context) => const Dialog(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                        );
+
+                                        final sources =
+                                            ((await AllanimeAPI.episodeInfo(
+                                          showInfo["_id"],
+                                          episode,
+                                          tl,
+                                        ))["data"]["episode"]["sourceUrls"]
+                                                    as List)
+                                                .where(
+                                          (element) =>
+                                              allowedSourceNames.contains(
+                                            element["sourceName"],
+                                          ),
+                                        );
+
+                                        List<Quality> qualities = [];
+
+                                        for (var source in sources) {
+                                          try {
+                                            qualities.addAll(
+                                              await AllanimeAPI
+                                                  .getQualitiesFromSource(
+                                                source,
+                                              ),
+                                            );
+                                          } catch (e) {
+                                            print(source);
+                                          }
+                                        }
+                                        // ignore: use_build_context_synchronously
+                                        Navigator.pop(context);
+                                        // ignore: use_build_context_synchronously
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => WatchPage(
+                                              source: sources.first,
+                                              qualities: qualities,
+                                              showData: widget.showData,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                       icon: Icon({
                                         "sub": Icons.subtitles_outlined,
                                         "dub": Icons.record_voice_over_outlined,
@@ -292,53 +343,53 @@ class _ShowOverviewState extends State<ShowOverview> {
     );
   }
 
-  Future<dynamic> showSelectServerDialog(
-    BuildContext context,
-    String showId,
-    String translationType,
-    String episodeString,
-  ) {
-    return showDialog(
-      context: context,
-      builder: (contex) =>
-          SimpleDialog(title: const Text("Select Server:"), children: [
-        FutureBuilder(
-          future: AllanimeAPI.episodeInfo(
-            showId,
-            episodeString,
-            translationType,
-          ),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final sources =
-                  snapshot.data!["data"]["episode"]["sourceUrls"] as List;
-              sources.removeWhere((source) =>
-                  !allowedSourceNames.contains(source["sourceName"]));
-              return Column(
-                children: sources
-                    .map(
-                      (source) => TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => WatchPage(
-                                  source: source,
-                                  showData: widget.showData,
-                                ),
-                              ));
-                        },
-                        child: Text(source["sourceName"]),
-                      ),
-                    )
-                    .toList(),
-              );
-            }
-            return const Center(child: CircularProgressIndicator());
-          },
-        ),
-      ]),
-    );
-  }
+//   Future<dynamic> showSelectServerDialog(
+//     BuildContext context,
+//     String showId,
+//     String translationType,
+//     String episodeString,
+//   ) {
+//     return showDialog(
+//       context: context,
+//       builder: (contex) =>
+//           SimpleDialog(title: const Text("Select Server:"), children: [
+//         FutureBuilder(
+//           future: AllanimeAPI.episodeInfo(
+//             showId,
+//             episodeString,
+//             translationType,
+//           ),
+//           builder: (context, snapshot) {
+//             if (snapshot.hasData) {
+//               final sources =
+//                   snapshot.data!["data"]["episode"]["sourceUrls"] as List;
+//               sources.removeWhere((source) =>
+//                   !allowedSourceNames.contains(source["sourceName"]));
+//               return Column(
+//                 children: sources
+//                     .map(
+//                       (source) => TextButton(
+//                         onPressed: () {
+//                           Navigator.pop(context);
+//                           Navigator.push(
+//                               context,
+//                               MaterialPageRoute(
+//                                 builder: (context) => WatchPage(
+//                                   source: source,
+//                                   showData: widget.showData,
+//                                 ),
+//                               ));
+//                         },
+//                         child: Text(source["sourceName"]),
+//                       ),
+//                     )
+//                     .toList(),
+//               );
+//             }
+//             return const Center(child: CircularProgressIndicator());
+//           },
+//         ),
+//       ]),
+//     );
+//   }
 }

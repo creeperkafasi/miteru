@@ -52,7 +52,7 @@ class _AnimeAppState extends State<AnimeApp> {
       theme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.red,
-          brightness: brightness ?? Brightness.light,
+          brightness: brightness,
         ),
         useMaterial3: true,
       ),
@@ -63,9 +63,11 @@ class _AnimeAppState extends State<AnimeApp> {
   // Shitty global settings logic: themes, etc.
   _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    brightness = prefs.getBool("brightness") ?? true
-        ? Brightness.light
-        : Brightness.dark;
+    setState(() {
+      brightness = prefs.getBool("brightness") ?? true
+          ? Brightness.light
+          : Brightness.dark;
+    });
   }
 
   refresh() {

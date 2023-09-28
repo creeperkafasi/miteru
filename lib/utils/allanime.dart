@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:m3u_nullsafe/m3u_nullsafe.dart';
 
 class AllanimeAPI {
   static const String allanimeBase = "https://allanime.to";
@@ -172,4 +173,63 @@ class AllanimeAPI {
     }
     return bytes;
   }
+
+  static Future<List<Quality>> getQualitiesFromSource(
+    dynamic src,
+  ) async {
+    final decryptedClockUrl = decryptAllAnime(
+      "1234567890123456789",
+      src["sourceUrl"].toString().split("--")[1],
+    );
+    final clockUrl = Uri.parse(
+      "https://embed.ssbcontent.site${decryptedClockUrl.replaceFirst("clock", "clock.json")}",
+    );
+    final source = await http.get(
+      clockUrl,
+      headers: {"Referer": "https://allanime.to"},
+    );
+
+    List<Quality> qualities = [];
+    for (var link in jsonDecode(source.body)["links"] as List) {
+      if (link["hls"] != null) {
+        if (link["link"].toString().contains("workfields")) continue;
+        final m3u8Content = (await http.get(Uri.parse(link["link"]))).body;
+
+        for (var q in (await M3uParser.parse(
+          m3u8Content,
+        ))) {
+          var baseUrl = Uri.parse(link["link"]);
+          List<String> newPathSegments = [];
+          newPathSegments.addAll(baseUrl.pathSegments);
+          newPathSegments.removeLast();
+          newPathSegments.add(q.link);
+
+          qualities.add(
+            Quality(
+              url: baseUrl.replace(pathSegments: newPathSegments),
+              priority: 0,
+              name: "${link['resolutionStr']} - "
+                  "${RegExp(r"\d+p").firstMatch(q.title)?.group(0).toString() ?? q.title}",
+            ),
+          );
+        }
+      } else {
+        qualities.add(Quality(
+          url: Uri.parse(link["link"]),
+          priority: link["priority"] ?? 0,
+          name: "${src["sourceName"]} ${link["resolutionStr"]}",
+        ));
+      }
+    }
+
+    return qualities;
+  }
+}
+
+class Quality {
+  final Uri url;
+  final int priority;
+  final String name;
+
+  Quality({required this.url, required this.priority, required this.name});
 }
