@@ -19,7 +19,7 @@ jobs:
       - uses: subosito/flutter-action@v2
       - run: flutter pub get
       - name: Build Apk 📦
-        run: flutter build apk --build-number $(date +%s)
+        run: flutter build apk --build-number $(date +%s) --release --analyze-size
         
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
