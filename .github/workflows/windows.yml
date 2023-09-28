@@ -1,0 +1,27 @@
+name: Build for Windows
+
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build exe and upload artifact
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v2
+        with:
+          java-version: '12.x'
+          distribution: 'zulu'
+          
+      - uses: subosito/flutter-action@v2
+      - run: flutter pub get
+      - name: Building 📦
+        run: flutter build windows --build-number $(date +%s) --release
+        
+    
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with: 
+          name: miteru.exe
+          path: build/windows/x64/release/miteru.exe
+      
