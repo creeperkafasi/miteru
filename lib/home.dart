@@ -312,7 +312,7 @@ class _HomePageState extends State<HomePage> {
       );
 }
 
-class HomePageShelf extends StatelessWidget {
+class HomePageShelf extends StatefulWidget {
   final Future<List<Widget>> shelfItems;
   final String title;
   final Widget icon;
@@ -330,6 +330,13 @@ class HomePageShelf extends StatelessWidget {
   });
 
   @override
+  State<HomePageShelf> createState() => _HomePageShelfState();
+}
+
+class _HomePageShelfState extends State<HomePageShelf> {
+  final scrollController = ScrollController();
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -340,21 +347,32 @@ class HomePageShelf extends StatelessWidget {
             padding: const EdgeInsets.all(4.0),
             child: Row(
               children: [
-                icon,
+                widget.icon,
                 const VerticalDivider(),
-                Text(title, style: const TextStyle(fontSize: 20)),
+                Text(widget.title, style: const TextStyle(fontSize: 20)),
               ],
             ),
           ),
           FutureBuilder<List<Widget>>(
-            future: shelfItems,
+            future: widget.shelfItems,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: snapshot.data!,
-                  ),
+                return Column(
+                  children: [
+                    Scrollbar(
+                      controller: scrollController,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom:8.0),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          controller: scrollController,
+                          child: Row(
+                            children: snapshot.data!,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               }
               return Stack(
@@ -371,7 +389,7 @@ class HomePageShelf extends StatelessWidget {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
                                 child: Container(
-                                  color: color[index * 100 + 100],
+                                  color: widget.color[index * 100 + 100],
                                   height: 140,
                                   width: 100,
                                 ),
@@ -383,8 +401,8 @@ class HomePageShelf extends StatelessWidget {
                       ),
                     ),
                   ),
-                  snapshot.hasError && onErrorWidget != null
-                      ? onErrorWidget!(snapshot.error!)
+                  snapshot.hasError && widget.onErrorWidget != null
+                      ? widget.onErrorWidget!(snapshot.error!)
                       : Text((snapshot.error ?? "").toString()),
                 ],
               );
