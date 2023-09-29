@@ -22,227 +22,243 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return Builder(builder: (context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("Miteru"),
-          actions: [
-            Builder(builder: (context) {
-              final brightness = Theme.of(context).brightness;
-              return IconButton(
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  setState(() {
-                    prefs.setBool(
-                        "brightness", !(prefs.getBool("brightness") ?? true));
-                    widget.refreshFunc();
-                  });
-                },
-                icon: Icon(
-                  (brightness == Brightness.dark)
-                      ? Icons.dark_mode
-                      : Icons.light_mode,
-                ),
-              );
-            }),
-            IconButton(
-              onPressed: () {
-                showSearch(context: context, delegate: AnimeSearchDelegate());
-              },
-              icon: const Icon(Icons.search),
-            ),
-          ],
+    return Shortcuts(
+      shortcuts: {
+        const CharacterActivator("f", control: true): VoidCallbackIntent(
+          () => showSearch(context: context, delegate: AnimeSearchDelegate()),
         ),
-        drawer: Drawer(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ListView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Text(
-                      "見てる",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 40,
-                      ),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Builder(builder: (context) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("Miteru"),
+              actions: [
+                Builder(builder: (context) {
+                  final brightness = Theme.of(context).brightness;
+                  return IconButton(
+                    onPressed: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      setState(() {
+                        prefs.setBool("brightness",
+                            !(prefs.getBool("brightness") ?? true));
+                        widget.refreshFunc();
+                      });
+                    },
+                    icon: Icon(
+                      (brightness == Brightness.dark)
+                          ? Icons.dark_mode
+                          : Icons.light_mode,
                     ),
-                  ),
-                ),
-                const Divider(),
-                TextButton.icon(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const TrackingScreen(),
-                    ),
-                  ),
-                  label: const Text("Tracking"),
-                  icon: const Icon(Icons.remove_red_eye_outlined),
+                  );
+                }),
+                IconButton(
+                  onPressed: () {
+                    showSearch(
+                        context: context, delegate: AnimeSearchDelegate());
+                  },
+                  icon: const Icon(Icons.search),
                 ),
               ],
             ),
-          ),
-        ),
-        body: RefreshIndicator(
-          onRefresh: () async {
-            setState(() {});
-          },
-          child: ListView(
-            children: [
-              HomePageShelf(
-                title: "Popular Today",
-                icon: const Icon(Icons.emoji_emotions_outlined),
-                color: Colors.pink,
-                shelfItems: Future.sync(() async {
-                  final resJson = await AllanimeAPI.queryPopular();
-                  return (resJson["data"]["queryPopular"]["recommendations"]
-                          as List)
-                      .map(
-                        (e) => InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ShowOverview(showData: e["anyCard"]),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SizedBox(
-                              width: 100,
-                              child: Column(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.network(
-                                      e["anyCard"]["thumbnail"],
-                                      height: 130,
-                                    ),
-                                  ),
-                                  Text(
-                                    (e["anyCard"]["englishName"] ??
-                                            e["anyCard"]["name"])
-                                        .toString(),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList();
-                }),
-              ),
-              HomePageShelf(
-                title: "Recent Uploads",
-                icon: const Icon(Icons.history),
-                color: Colors.lime,
-                shelfItems: Future.sync(() async {
-                  // Searching with an empty query returns all shows sorted by recent
-                  final items =
-                      (await AllanimeAPI.search("", origin: "JP"))["data"]
-                          ["shows"]["edges"] as List;
-                  // Filter out the garbage
-                  items.removeWhere(
-                    (element) =>
-                        (double.parse((element["score"] ?? 0).toString()) <=
-                            6.5),
-                  );
-                  return (items)
-                      .map(
-                        (e) => InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ShowOverview(showData: e),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SizedBox(
-                              width: 100,
-                              child: Column(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.network(
-                                      e["thumbnail"],
-                                      height: 130,
-                                    ),
-                                  ),
-                                  Text(
-                                    (e["englishName"] ?? e["name"]).toString(),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList();
-                }),
-              ),
-              HomePageShelf(
-                title: "Kitsu tracker",
-                icon: const Icon(Icons.remove_red_eye_outlined),
-                shelfItems: Future.sync(() async {
-                  final prefs = await SharedPreferences.getInstance();
-                  if (prefs.getString("kitsu-User") == null) {
-                    throw Exception("Kitsu user not set");
-                  }
-                  final lib = await KitsuApi.getUserLibrary(
-                    prefs.getString("kitsu-User") ?? "",
-                    filters: {
-                      "status": "current",
-                      "kind": "anime",
-                    },
-                  );
-                  return (lib["data"] as List)
-                      .map(
-                        kitsuButton,
-                      )
-                      .toList();
-                }),
-                color: Colors.orange,
-                onErrorWidget: (error) => Container(
-                  color: Theme.of(context).colorScheme.error.withOpacity(0.5),
-                  width: MediaQuery.of(context).size.width,
-                  height: 168,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          "$error",
+            drawer: Drawer(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Text(
+                          "見てる",
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onError,
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 40,
                           ),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const TrackingScreen(),
-                            ),
-                          ),
-                          icon: const Icon(Icons.remove_red_eye_outlined),
-                          label: const Text("Open Tracking Menu"),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const Divider(),
+                    TextButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TrackingScreen(),
+                        ),
+                      ),
+                      label: const Text("Tracking"),
+                      icon: const Icon(Icons.remove_red_eye_outlined),
+                    ),
+                  ],
                 ),
-              )
-            ],
-          ),
-        ),
-      );
-    });
+              ),
+            ),
+            body: RefreshIndicator(
+              onRefresh: () async {
+                setState(() {});
+              },
+              child: ListView(
+                children: [
+                  HomePageShelf(
+                    title: "Popular Today",
+                    icon: const Icon(Icons.emoji_emotions_outlined),
+                    color: Colors.pink,
+                    shelfItems: Future.sync(() async {
+                      final resJson = await AllanimeAPI.queryPopular();
+                      return (resJson["data"]["queryPopular"]["recommendations"]
+                              as List)
+                          .map(
+                            (e) => InkWell(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ShowOverview(showData: e["anyCard"]),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 100,
+                                  child: Column(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        child: Image.network(
+                                          e["anyCard"]["thumbnail"],
+                                          height: 130,
+                                        ),
+                                      ),
+                                      Text(
+                                        (e["anyCard"]["englishName"] ??
+                                                e["anyCard"]["name"])
+                                            .toString(),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList();
+                    }),
+                  ),
+                  HomePageShelf(
+                    title: "Recent Uploads",
+                    icon: const Icon(Icons.history),
+                    color: Colors.lime,
+                    shelfItems: Future.sync(() async {
+                      // Searching with an empty query returns all shows sorted by recent
+                      final items =
+                          (await AllanimeAPI.search("", origin: "JP"))["data"]
+                              ["shows"]["edges"] as List;
+                      // Filter out the garbage
+                      items.removeWhere(
+                        (element) =>
+                            (double.parse((element["score"] ?? 0).toString()) <=
+                                6.5),
+                      );
+                      return (items)
+                          .map(
+                            (e) => InkWell(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ShowOverview(showData: e),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 100,
+                                  child: Column(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        child: Image.network(
+                                          e["thumbnail"],
+                                          height: 130,
+                                        ),
+                                      ),
+                                      Text(
+                                        (e["englishName"] ?? e["name"])
+                                            .toString(),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList();
+                    }),
+                  ),
+                  HomePageShelf(
+                    title: "Kitsu tracker",
+                    icon: const Icon(Icons.remove_red_eye_outlined),
+                    shelfItems: Future.sync(() async {
+                      final prefs = await SharedPreferences.getInstance();
+                      if (prefs.getString("kitsu-User") == null) {
+                        throw Exception("Kitsu user not set");
+                      }
+                      final lib = await KitsuApi.getUserLibrary(
+                        prefs.getString("kitsu-User") ?? "",
+                        filters: {
+                          "status": "current",
+                          "kind": "anime",
+                        },
+                      );
+                      return (lib["data"] as List)
+                          .map(
+                            kitsuButton,
+                          )
+                          .toList();
+                    }),
+                    color: Colors.orange,
+                    onErrorWidget: (error) => Container(
+                      color:
+                          Theme.of(context).colorScheme.error.withOpacity(0.5),
+                      width: MediaQuery.of(context).size.width,
+                      height: 168,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "$error",
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onError,
+                              ),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const TrackingScreen(),
+                                ),
+                              ),
+                              icon: const Icon(Icons.remove_red_eye_outlined),
+                              label: const Text("Open Tracking Menu"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
+    );
   }
 
   FutureBuilder<dynamic> kitsuButton(e) => FutureBuilder(

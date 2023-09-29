@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:fvp/fvp.dart';
 import 'package:miteru/home.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,16 @@ class _AnimeAppState extends State<AnimeApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       debugShowMaterialGrid: false,
+      shortcuts: {
+        ...WidgetsApp.defaultShortcuts,
+        const CharacterActivator("d", control: true):
+            VoidCallbackIntent(() async {
+          final prefs = await SharedPreferences.getInstance();
+          prefs.setBool("brightness", !(prefs.getBool("brightness") ?? true));
+          refresh();
+        }),
+        LogicalKeySet(LogicalKeyboardKey.escape): const DismissIntent(),
+      },
       title: "Miteru",
       theme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
