@@ -270,8 +270,20 @@ class _ShowOverviewState extends State<ShowOverview> {
                                         showDialog(
                                           barrierDismissible: false,
                                           context: context,
-                                          builder: (context) => const Dialog(
-                                            child: CircularProgressIndicator(),
+                                          builder: (context) =>
+                                              const SimpleDialog(
+                                            title: Text(
+                                              "Fetching episode info...",
+                                            ),
+                                            children: [
+                                              Center(
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(8.0),
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         );
 

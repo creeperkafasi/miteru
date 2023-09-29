@@ -362,7 +362,7 @@ class _HomePageShelfState extends State<HomePageShelf> {
                     Scrollbar(
                       controller: scrollController,
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom:8.0),
+                        padding: const EdgeInsets.only(bottom: 8.0),
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           controller: scrollController,
