@@ -17,6 +17,8 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
+late Brightness gbrightness;
+
 void main() async {
   HttpOverrides.global = MyHttpOverrides();
 
@@ -24,6 +26,11 @@ void main() async {
   databaseFactory = databaseFactoryFfi;
 
   registerWith();
+
+  final prefs = await SharedPreferences.getInstance();
+
+  gbrightness =
+      prefs.getBool("brightness") ?? true ? Brightness.light : Brightness.dark;
 
   runApp(const AnimeApp());
 }
@@ -36,7 +43,7 @@ class AnimeApp extends StatefulWidget {
 }
 
 class _AnimeAppState extends State<AnimeApp> {
-  Brightness brightness = SchedulerBinding.instance.window.platformBrightness;
+  Brightness brightness = gbrightness;
 
   @override
   void initState() {
