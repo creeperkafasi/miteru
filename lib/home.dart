@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:miteru/search.dart';
 import 'package:miteru/show.dart';
 import 'package:miteru/trackers.dart';

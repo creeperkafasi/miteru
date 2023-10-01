@@ -27,6 +27,8 @@ class _WatchPageState extends State<WatchPage> {
 
   Duration? savedPosition;
 
+  double skipMultiplier = 0;
+
   @override
   void initState() {
     super.initState();
@@ -72,72 +74,83 @@ class _WatchPageState extends State<WatchPage> {
             ),
           ),
         },
-        child: Focus(
-          autofocus: true,
-          child: SafeArea(
-            child: Container(
-              color: Colors.black,
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: Builder(builder: (context) {
-                playerController = VideoPlayerController.networkUrl(
-                  widget.qualities[selectedQualityIndex].url,
-                );
-                return Chewie(
-                  controller: ChewieController(
-                    startAt: savedPosition ?? Duration.zero,
-                    autoPlay: savedPosition != null,
-                    videoPlayerController: playerController!,
-                    aspectRatio: aspectRatio,
-                    autoInitialize: true,
-                    additionalOptions: (context) => [
-                      OptionItem(
-                        onTap: () {
-                          showDialog(
-                              context: context,
-                              builder: ((context) {
-                                return SimpleDialog(
-                                  title: const Text("Select Quality:"),
-                                  children: [
-                                    Column(
-                                        children: widget.qualities
-                                            .map(
-                                              (e) => Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: TextButton.icon(
-                                                  onPressed: () async {
-                                                    savedPosition =
-                                                        await playerController
-                                                            ?.position;
-                                                    setState(() {
-                                                      playerController
-                                                          ?.dispose();
-                                                      selectedQualityIndex =
-                                                          widget.qualities
-                                                              .indexOf(e);
-                                                    });
-                                                  },
-                                                  icon: const Icon(
-                                                      Icons.settings),
-                                                  label: Text(e.name),
+        child: GestureDetector(
+          onDoubleTapDown: (details) {
+            final screenLoc =
+                (details.globalPosition.dx / MediaQuery.of(context).size.width);
+            skipMultiplier = (2 * screenLoc - 1) * 10;
+          },
+          onDoubleTap: () async => playerController?.seekTo(
+            (await playerController!.position)! +
+                Duration(seconds: (2 * skipMultiplier).toInt()),
+          ),
+          child: Focus(
+            autofocus: true,
+            child: SafeArea(
+              child: Container(
+                color: Colors.black,
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: Builder(builder: (context) {
+                  playerController = VideoPlayerController.networkUrl(
+                    widget.qualities[selectedQualityIndex].url,
+                  );
+                  return Chewie(
+                    controller: ChewieController(
+                      startAt: savedPosition ?? Duration.zero,
+                      autoPlay: savedPosition != null,
+                      videoPlayerController: playerController!,
+                      aspectRatio: aspectRatio,
+                      autoInitialize: true,
+                      additionalOptions: (context) => [
+                        OptionItem(
+                          onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: ((context) {
+                                  return SimpleDialog(
+                                    title: const Text("Select Quality:"),
+                                    children: [
+                                      Column(
+                                          children: widget.qualities
+                                              .map(
+                                                (e) => Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: TextButton.icon(
+                                                    onPressed: () async {
+                                                      savedPosition =
+                                                          await playerController
+                                                              ?.position;
+                                                      setState(() {
+                                                        playerController
+                                                            ?.dispose();
+                                                        selectedQualityIndex =
+                                                            widget.qualities
+                                                                .indexOf(e);
+                                                      });
+                                                    },
+                                                    icon: const Icon(
+                                                        Icons.settings),
+                                                    label: Text(e.name),
+                                                  ),
                                                 ),
-                                              ),
-                                            )
-                                            .toList()),
-                                  ],
-                                );
-                              }));
-                        },
-                        iconData: Icons.high_quality,
-                        title: "Quality",
-                      )
-                    ],
-                    // autoPlay: true,
-                    // fullScreenByDefault: true,
-                  ),
-                );
-              }),
+                                              )
+                                              .toList()),
+                                    ],
+                                  );
+                                }));
+                          },
+                          iconData: Icons.high_quality,
+                          title: "Quality",
+                        )
+                      ],
+                      // autoPlay: true,
+                      // fullScreenByDefault: true,
+                    ),
+                  );
+                }),
+              ),
             ),
           ),
         ),

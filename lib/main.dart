@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:fvp/fvp.dart';
 import 'package:miteru/home.dart';
