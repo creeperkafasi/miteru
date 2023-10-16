@@ -45,6 +45,7 @@ dependencies:
   fvp: ^0.8.0
   m3u_nullsafe: ^1.0.4
   url_launcher: ^6.1.14
+  cached_network_image: ^3.3.0
 
 dev_dependencies:
   flutter_test:

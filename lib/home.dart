@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:miteru/search.dart';
 import 'package:miteru/show.dart';
@@ -126,7 +127,8 @@ class _HomePageState extends State<HomePage> {
                                       ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(8.0),
-                                        child: Image.network(
+                                        child: CachedNetworkImage(
+                                          imageUrl:
                                           e["anyCard"]["thumbnail"],
                                           height: 130,
                                         ),
@@ -180,7 +182,8 @@ class _HomePageState extends State<HomePage> {
                                       ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(8.0),
-                                        child: Image.network(
+                                        child: CachedNetworkImage(
+                                          imageUrl:
                                           e["thumbnail"],
                                           height: 130,
                                         ),
@@ -304,7 +307,8 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
+                        child: CachedNetworkImage(
+                          imageUrl:
                           snapshot.data!["data"]["attributes"]["posterImage"]
                                   ["tiny"] ??
                               "https://placehold.co/90x130/png?text=?",

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:miteru/show.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +6,6 @@ import 'package:miteru/utils/allanime.dart';
 import 'package:miteru/utils/db.dart';
 
 class AnimeSearchDelegate extends SearchDelegate {
-
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
@@ -77,15 +77,16 @@ class AnimeSearchDelegate extends SearchDelegate {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(4.0),
-                        child: Image.network(
-                          items[index]["thumbnail"] ??
+                        child: CachedNetworkImage(
+                          imageUrl: items[index]["thumbnail"] ??
                               "https://placehold.co/64x108/png?text=?",
                           height: 108,
                           width: 64,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Image.network(
-                                  "https://placehold.co/64x108/png?text=?"),
+                          errorWidget: (context, error, stackTrace) =>
+                              CachedNetworkImage(
+                            imageUrl: "https://placehold.co/64x108/png?text=?",
+                          ),
                         ),
                       ),
                       Expanded(

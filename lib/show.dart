@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:miteru/utils/allanime.dart';
 import 'package:miteru/watch.dart';
 import 'package:flutter/material.dart';
@@ -58,10 +59,12 @@ class _ShowOverviewState extends State<ShowOverview> {
                                   Rect.fromLTRB(0, 0, rect.width, rect.height));
                             },
                             blendMode: BlendMode.dstIn,
-                            child: Image.network(
+                            child: CachedNetworkImage(
+                              imageUrl:
                               showInfo["banner"],
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Image.network(
+                              errorWidget: (context, error, stackTrace) =>
+                                  CachedNetworkImage(
+                                imageUrl:
                                 "https://placehold.co/64x108/png?text=?",
                               ),
                             ),
@@ -83,7 +86,8 @@ class _ShowOverviewState extends State<ShowOverview> {
                                 ),
                                 elevation: 8,
                                 clipBehavior: Clip.antiAlias,
-                                child: Image.network(
+                                child: CachedNetworkImage(
+                                  imageUrl:
                                   showInfo["thumbnail"],
                                   height: 180,
                                 ),
