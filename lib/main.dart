@@ -26,8 +26,8 @@ void main() async {
 
   registerWith();
 
+  WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
-
   gbrightness =
       prefs.getBool("brightness") ?? true ? Brightness.light : Brightness.dark;
 
