@@ -131,6 +131,43 @@ class _ShowOverviewState extends State<ShowOverview> {
                                                 ),
                                               )
                                             : Container(),
+                                        Builder(builder: (context) {
+                                          return Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(
+                                                Icons.star_border,
+                                                size: 20,
+                                              ),
+                                              Text(
+                                                (widget.showData["score"] ??
+                                                        "?")
+                                                    .toString(),
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w200,
+                                                ),
+                                              ),
+                                              const VerticalDivider(),
+                                              widget.showData["season"] != null
+                                                  ? Text(
+                                                      widget.showData["season"]
+                                                              ["quarter"] +
+                                                          " " +
+                                                          widget.showData["season"]
+                                                                  ["year"]
+                                                              .toString(),
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w200,
+                                                      ),
+                                                    )
+                                                  : Container(),
+                                            ],
+                                          );
+                                        })
                                       ],
                                     ),
                                   ),

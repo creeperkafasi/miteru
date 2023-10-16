@@ -30,6 +30,8 @@ class AllanimeAPI {
                 nativeName
                 thumbnail
                 availableEpisodes
+                score
+                season
               }
             }
           }
